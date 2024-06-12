@@ -1,4 +1,6 @@
 .vscode/settings.json
 *.pyc
 *.pth
+*.log
+*.pkl
 rwkv_vocab_v20230424.txt
