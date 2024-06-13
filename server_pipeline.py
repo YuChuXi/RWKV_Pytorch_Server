@@ -457,7 +457,7 @@ class RWKVEmbryo:
         async with self.state_lock:
             with torch.no_grad():
                 self.state.logits, self.state.state = model.forward_parallel_slices(torch.tensor([tokens]).long().to(RWKV_DEVICE), self.state.state, slice_len=128)
-                self.state.logits = self.state.logits[1, -1, :]
+                self.state.logits = self.state.logits[0, -1, :]
         
         for token in tokens:
             await self.process_processed_tokens_counts(token)
