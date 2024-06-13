@@ -422,14 +422,15 @@ class RWKVEmbryo:
     @log_call
     async def process_token(self, token: int) -> Tuple[torch.Tensor, torch.Tensor]:
         await asyncio.sleep(0)
-        self.state.logits, self.state.state = model.forward(
-            token, self.state.state
-        )
+        with torch.no_grad():
+            self.state.logits, self.state.state = model.forward(
+                torch.tensor(token).reshape((1, -1)), self.state.state
+            )
         await self.process_processed_tokens_counts(token)
         self.need_save = True
         await self.check_state()
 
-        self.mlog.write(tokenizer.decodeBytes([token]))
+        self.mlog.write(tokenizer.decodeBytes([[token]])[0])
         return self.state.logits, self.state.state
 
     @log_call
@@ -446,15 +447,16 @@ class RWKVEmbryo:
         if self.is_busy():
             self.interrupt()
         async with self.state_lock:
-            tokens = torch.tensor([tokens]).long().to(RWKV_DEVICE)
-            self.state.logits, self.state.state = model.forward_parallel(tokens, self.state.state)
+            with torch.no_grad():
+                t_tokens = torch.tensor(tokens).reshape((1, -1)).long().to(RWKV_DEVICE)
+                self.state.logits, self.state.state = model.forward_parallel_slices(t_tokens, self.state.state)
         
         for token in tokens:
             await self.process_processed_tokens_counts(token)
         self.need_save = True
         await self.check_state()
 
-        self.mlog.write(tokenizer.decodeBytes(tokens))
+        self.mlog.write(tokenizer.decodeBytes(tokens)[0])
         return self.state.logits, self.state.state
 
     async def gen_future(

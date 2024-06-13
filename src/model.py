@@ -94,6 +94,7 @@ class RWKV_Block(nn.Module):
         Returns:
             torch.Tensor: 经过手动层归一化后的张量，形状与输入的 x 相同。
         """
+        eps = torch.tensor(eps, dtype=x.dtype, device=x.device)
         mean = x.mean(dim=-1, keepdim=True)
         var = x.var(dim=-1, keepdim=True, unbiased=False)
         x_normalized = (x - mean) / torch.sqrt(var + eps)
@@ -114,6 +115,7 @@ class RWKV_Block(nn.Module):
             torch.Tensor: 经过人工组归一化后的张量，形状与输入的 x 相同。
         """
         N, C = x.shape
+        eps = torch.tensor(eps, dtype=x.dtype, device=x.device)
         #if C % num_groups != 0:
             #raise ValueError("num_channels must be divisible by num_groups")
         #加上这个会有无法推断静态图的警告
@@ -164,7 +166,7 @@ class RWKV_Block(nn.Module):
         Batch, L, _ = x.shape
         i0 = (2 + self.head_size) * i + 0
         
-        sx_lerp = torch.empty(x.shape, device=x.device)
+        sx_lerp = torch.empty(x.shape, device=x.device, dtype=x.dtype)
         sx_lerp[:, 0] = state[:, i0] - x[:, 0]
         
         for l in range(1, L):
@@ -249,7 +251,7 @@ class RWKV_Block(nn.Module):
         batch_size, L, H, S = x.size(0), x.size(1), self.n_head, self.head_size
         i1 = (2 + S) * i + 1
         # 初始化结果张量
-        sx_lerp = torch.empty(x.shape, device=x.device)
+        sx_lerp = torch.empty(x.shape, device=x.device, dtype=x.dtype)
         
         # 计算初始插值
         sx_lerp[:, 0] = state[:, i1] - x[:, 0]
@@ -280,7 +282,8 @@ class RWKV_Block(nn.Module):
         v = self.att_value(xv).view(batch_size, L, H, 1, S)
         g = self.silu(self.att_gate(xg)) # [10, 100, 2048]
         # 使用注意力机制更新状态
-        state_s = torch.empty(batch_size, L, H, S, S, device=x.device)#初始化state_s的结果张量
+        print(batch_size, L, H, S, S)
+        state_s = torch.empty(batch_size, L, H, S, S, device=x.device, dtype=state.dtype)#初始化state_s的结果张量
         s = state[:, (2+S)*i+2:(2+S)*(i+1)].view(batch_size, H, S, S)
         state_s[:, 0] = s # 把第一个a_{t-1, j}赋值给state_s
         a = k @ v # a: [batch_size, L, H, S, S]
@@ -360,13 +363,13 @@ class RWKV_RNN(nn.Module):
         print('onnx opset ', self.onnx_opset)
         self.eval()
         # 加载权重
-        w = torch.load(args['MODEL_NAME'] + '.pth', map_location='cpu')
+        w = torch.load(args['MODEL_NAME'] + '.pth', map_location=args['device'])
         
         # 将所有权重转换为float32
         self.num_layer = 0
 
         for k in tqdm(w.keys(), desc="Convert weights", leave=False):
-            w[k] = w[k].float()
+            w[k] = w[k].bfloat16()
             if '.time_' in k: w[k] = w[k].squeeze()
             if '.time_faaaa' in k: w[k] = w[k].unsqueeze(-1)
             if "blocks" in k: self.num_layer = max(self.num_layer, int(k.split(".")[1]))
@@ -435,13 +438,12 @@ class RWKV_RNN(nn.Module):
         Returns:
             torch.Tensor: 模型输出。
         """
-        x = self.emb(token.to(self.device))
+        x = self.emb(token.to(self.emb.weight.device))
         state = (
-            torch.zeros(x.size(0), self.state_size[0], self.state_size[1])
+            torch.zeros(x.size(0), self.state_size[0], self.state_size[1], dtype=x.dtype, device=x.device)
             if state is None
             else state
         )
-        state = state.to(self.device)
 
         if self.onnx_opset >= 17:
             x = self.ln0(x)
@@ -467,13 +469,13 @@ class RWKV_RNN(nn.Module):
         Returns:
             torch.Tensor: 模型输出。
         """
-        x = self.emb(token.to(self.device))
+        x = self.emb(token.to(self.emb.weight.device))
+        print(x,x.shape)
         state = (
-            torch.zeros(x.size(0), self.state_size[0], self.state_size[1])
+            torch.zeros(x.size(0), self.state_size[0], self.state_size[1], dtype=x.dtype, device=x.device)
             if state is None
             else state
         )
-        state = state.to(self.device)
         
         if self.onnx_opset >= 17:
             x = self.ln0(x)
@@ -489,6 +491,24 @@ class RWKV_RNN(nn.Module):
         x = self.head(x)
         return x, state
 
+    def forward_parallel_slices(self, token: torch.Tensor, state: torch.Tensor, slice_len: int = 64) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        模型的分段并行前向传播，减少显存/内存使用。
+        Args:
+            token (torch.Tensor): 输入的令牌张量。[Batch_size, L]
+            state (torch.Tensor): 隐藏状态张量。[Batch_size, State_size, N_embd]
+        Returns:
+            torch.Tensor: 模型输出。
+        """
+        data_len = token.shape[1]
+        for i in range((data_len-2)//slice_len+1):
+            start = i*slice_len
+            end = min((i+1)*slice_len, data_len)
+            token_i = token[:, start:end]
+            token_out, state_new = self.forward_parallel(token_i, state)
+            state = state_new.detach()  # 使用 detach() 截断梯度传播, 训练使用
+        
+        return token_out, state
 
 class RWKV_RNN_Stream(nn.Module):
     """
