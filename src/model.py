@@ -550,6 +550,7 @@ class RWKV_RNN(nn.Module):
         Returns:
             torch.Tensor: 模型输出。
         """
+        token_out = None
         data_len = token.shape[1]
         for i in range((data_len-2)//slice_len+1):
             start = i*slice_len
@@ -557,7 +558,8 @@ class RWKV_RNN(nn.Module):
             token_i = token[:, start:end]
             token_out, state_new = self.forward_parallel(token_i, state)
             state = state_new.detach()  # 使用 detach() 截断梯度传播, 训练使用
-        
+        if token_out is None:
+            raise ValueError(str(token))
         return token_out, state
 
     def init_state(self, batch_size: int, state_name:str = None) -> torch.Tensor:
