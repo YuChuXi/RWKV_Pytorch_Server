@@ -487,7 +487,7 @@ class RWKVEmbryo:
                 await asyncio.sleep(0)
                 if i < len_head:
                     token = head[i]
-                    logits, _ = await self.process_token(token)
+                    logits, _ = await self.process_token([token])
                 else:
                     logits = await self.process_token_penalty(logits)
                     token: int = sampler.sample_logits(
@@ -596,7 +596,7 @@ class RWKVChater(RWKVChaterEmbryo):
         message = message.replace(
             nickname, self.prompt.bot
         )  # .strip() # 昵称和提示词不一定一致
-        head = tokenizer_encode(f"{self.prompt.bot}{self.prompt.separator}")
+        head = tokenizer_encode(f"{self.prompt.bot}{self.prompt.separator}")[0]
 
         if message != "+":
             prompt = f"{chatuser}{self.prompt.separator} {message}\n\n"
@@ -662,7 +662,7 @@ class RWKVGroupChater(RWKVChaterEmbryo):
             self.clean_interrupt()
             raise RWKVInterruptException
         
-        head = tokenizer_encode(f"{self.prompt.bot}{self.prompt.separator}")
+        head = tokenizer_encode(f"{self.prompt.bot}{self.prompt.separator}")[0]
         answer, original = await self.gen_future(head=head, end_of="\n\n")
         await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE)
 
