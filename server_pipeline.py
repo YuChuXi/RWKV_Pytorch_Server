@@ -65,13 +65,13 @@ model = RWKV_RNN(args = {
     
 check_dir("data")
 if check_file(f"data/tokenizer_pkl"):
-    prxxx(f"Loading tokenizer   file: data/tokenizer_pkl")
-    with open(f"data/tokenizer_pkl", "rb") as f:
+    prxxx(f"Loading tokenizer   file: data/tokenizer.pkl")
+    with open(f"data/tokenizer.pkl", "rb") as f:
         tokenizer: RWKV_TOKENIZER = pickle.load(f)
 else:
     prxxx(f"Loading tokenizer   file: {TONKEIZER_DICT}")
     tokenizer: RWKV_TOKENIZER = RWKV_TOKENIZER(TONKEIZER_DICT)
-    with open(f"data/tokenizer_pkl", "wb") as f:
+    with open(f"data/tokenizer.pkl", "wb") as f:
         pickle.dump(tokenizer, f)
 
 def tokenizer_encode(s:str)->List[int]:
@@ -302,7 +302,7 @@ class RWKVEmbryo:
             prxxx(f"Processed prompt tokens   used: {int(time.time()-ltime)} s", q=q)
             await self.save_state(self.id, must=True, q=q)
             await self.save_state(self.default_state, must=True, q=q)
-            self.mlog.write(f" : Load prompt [\"{prompt.prompt}\"]\n\n".encode("utf-8"))
+            self.mlog.write(f" : Load prompt [\"{prompt.prompt}\"]\n\n".encode(encoding="utf-8"))
             return
 
         state_names = [self.default_state, MODEL_STATE_NAME]
@@ -315,7 +315,7 @@ class RWKVEmbryo:
                 async with self.state_lock:
                     self.state = await state_cache[state_name].copy()
                 prxxx(f"Load state from cache   name: {state_name}", q=q)
-                self.mlog.write(f" : Load state [{state_name}]\n\n".encode("utf-8"))
+                self.mlog.write(f" : Load state [{state_name}]\n\n".encode(encoding="utf-8"))
                 return
            
             async with self.state_lock: # 如果成功加载
@@ -327,7 +327,7 @@ class RWKVEmbryo:
                     state_cache[state_name] = await self.state.copy()
                 self.need_save = True
             prxxx(f"Load state   name: {state_name}", q=q)
-            self.mlog.write(f" : Load state [{state_name}]\n\n".encode("utf-8"))
+            self.mlog.write(f" : Load state [{state_name}]\n\n".encode(encoding="utf-8"))
             return
 
     @log_call
@@ -338,7 +338,7 @@ class RWKVEmbryo:
             async with self.state_lock:
                 await self.state.save(state_name)
             prxxx(f"Save state   name: {state_name}", q=q)
-            self.mlog.write(f" : Save state [{state_name}]\n\n".encode("utf-8"))
+            self.mlog.write(f" : Save state [{state_name}]\n\n".encode(encoding="utf-8"))
             self.need_save = False
         self.mlog.flush()
 
@@ -476,7 +476,7 @@ class RWKVEmbryo:
         len_head = len(head)
         logits = None
         answer: bytes = b""
-        end: bytes = end_of.encode("utf-8")
+        end: bytes = end_of.encode(encoding="utf-8")
 
         async with self.state_lock:
             for i in tqdm.trange(
@@ -500,7 +500,7 @@ class RWKVEmbryo:
                         break
 
         self.need_save = True
-        answer = answer.decode("utf-8", errors="ignore").strip()
+        answer = answer.decode(encoding="utf-8", errors="ignore").strip()
         return self.prompt.process_ignore(answer), answer
 
     async def call(self, api: str, kwargs: Dict[str, object]):
