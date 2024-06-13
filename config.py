@@ -55,7 +55,7 @@ CHAT_LANGUAGE: str = "Chinese"
 # QA: Question and Answer prompt to talk to an AI assistant.
 # Chat: chat prompt (need a large model for adequate quality, 7B+).
 CHAT_PROMPT_TYPE: str = "Chat-MoZi-N"
-
+# CHAT_PROMPT_TYPE = "Chat-Ella"
 
 # ======================================== Gener settings =========================================
 
