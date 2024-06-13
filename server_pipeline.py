@@ -312,28 +312,31 @@ class RWKVEmbryo:
             return
 
         state_names = [self.default_state, MODEL_STATE_NAME]
-        if state_name is not None:
-            state_names = [state_name] + state_names
 
         async with self.state_lock:
-            for state_name in state_names:
-                await asyncio.sleep(0)
-                if (state_name != self.id) and (state_name in state_cache): # 如果已经有缓存
-                    self.state = await state_cache[state_name].copy()
-                    prxxx(f"Load state from cache   name: {state_name}", q=q)
-                    self.mlog.write(f" : Load state [{state_name}]\n\n".encode(encoding="utf-8"))
-                    return
-           
-                if await self.state.load(state_name) is None:
-                    continue
-                    
+            loaded = self.state.load(state_name)
+            if loaded:
                 prxxx(f"Load state   name: {state_name}", q=q)
-                self.mlog.write(f" : Load state [{state_name}]\n\n".encode(encoding="utf-8"))
-                if state_name != self.id: # 如果不是ID存档则缓存
-                    state_cache[state_name] = await self.state.copy()
-                    prxxx(f"Cache state   name: {state_name}", q=q)
-                self.need_save = True
-                return
+                self.mlog.write(f" : Load state [{name}]\n\n".encode(encoding="utf-8"))
+
+            for name in state_names: # 检查缓存 & 加载
+                await asyncio.sleep(0)
+
+                if name not in state_cache:
+                    if state := RWKVState().load(name):
+                        state_cache[name] = state
+                        prxxx(f"Cache state   name: {name}", q=q)
+                        
+                if loaded:
+                    continue
+                
+                if name in state_cache:
+                    loaded = self.state = await state_cache[name].copy()
+                    prxxx(f"Load state from cache   name: {name}", q=q)
+                    self.mlog.write(f" : Load state [{name}]\n\n".encode(encoding="utf-8"))
+
+            self.need_save = True
+            return
 
     @log_call
     async def save_state(
