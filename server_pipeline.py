@@ -75,7 +75,7 @@ else:
         pickle.dump(tokenizer, f)
 
 def tokenizer_encode(s:str)->List[int]:
-    return tokenizer.encode([str])[0]
+    return tokenizer.encode([s])[0]
 
 def tokenizer_decode(l:List[int]) -> str:
     return tokenizer.decodeBytes(l).decode(encoding="utf-8", errors="ignore")
@@ -218,6 +218,7 @@ class RWKVPrompt:
                 if check_file(self.prompt):
                     with open(self.prompt, "r", encoding="utf-8", errors="ignore") as f:
                         self.prompt = f.read()
+
             assert self.prompt != "", "Prompt must not be empty"
 
     def __str__(self):
