@@ -482,7 +482,7 @@ class RWKVEmbryo:
         end_of: str = "\n\n",
     ) -> Tuple[str, str]:
         len_head = len(head)
-        logits = None
+        logits = self.state.logits
         answer: bytes = b""
         end: bytes = end_of.encode(encoding="utf-8")
 
