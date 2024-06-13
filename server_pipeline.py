@@ -315,22 +315,21 @@ class RWKVEmbryo:
         if state_name is not None:
             state_names = [state_name] + state_names
 
-        for state_name in state_names:
-            await asyncio.sleep(0)
-            if (state_name != self.id) and (state_name in state_cache): # 如果已经有缓存
-                async with self.state_lock:
+        async with self.state_lock:
+            for state_name in state_names:
+                await asyncio.sleep(0)
+                if (state_name != self.id) and (state_name in state_cache): # 如果已经有缓存
                     self.state = await state_cache[state_name].copy()
-                prxxx(f"Load state from cache   name: {state_name}", q=q)
-                self.mlog.write(f" : Load state [{state_name}]\n\n".encode(encoding="utf-8"))
-                return
+                    prxxx(f"Load state from cache   name: {state_name}", q=q)
+                    self.mlog.write(f" : Load state [{state_name}]\n\n".encode(encoding="utf-8"))
+                    return
            
-            async with self.state_lock: # 如果成功加载
                 if await self.state.load(state_name) is None:
                     continue
                     
-            if state_name != self.id: # 如果不是ID存档则缓存
-                async with self.state_lock:
+                if state_name != self.id: # 如果不是ID存档则缓存
                     state_cache[state_name] = await self.state.copy()
+                    prxxx(f"Cache state   name: {state_name}", q=q)
                 self.need_save = True
             prxxx(f"Load state   name: {state_name}", q=q)
             self.mlog.write(f" : Load state [{state_name}]\n\n".encode(encoding="utf-8"))
