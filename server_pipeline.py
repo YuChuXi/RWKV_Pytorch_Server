@@ -64,16 +64,21 @@ model = RWKV_RNN(args = {
     }).to(RWKV_DEVICE)
     
 check_dir("data")
-if check_file(f"data/tokenizer.pkl"):
-    prxxx(f"Loading tokenizer   file: data/tokenizer.pkl")
-    with open(f"data/tokenizer.pkl", "rb") as f:
+if check_file(f"data/tokenizer_pkl"):
+    prxxx(f"Loading tokenizer   file: data/tokenizer_pkl")
+    with open(f"data/tokenizer_pkl", "rb") as f:
         tokenizer: RWKV_TOKENIZER = pickle.load(f)
 else:
     prxxx(f"Loading tokenizer   file: {TONKEIZER_DICT}")
     tokenizer: RWKV_TOKENIZER = RWKV_TOKENIZER(TONKEIZER_DICT)
-    with open(f"data/tokenizer.pkl", "wb") as f:
+    with open(f"data/tokenizer_pkl", "wb") as f:
         pickle.dump(tokenizer, f)
 
+def tokenizer_encode(s:str)->List[int]:
+    return tokenizer.encode([str])[0]
+
+def tokenizer_decode(l:List[int]):
+    return tokenizer.decodeBytes(l).decode(encoding="utf-8", errors="ignore")
 # ========================================= Embryo states =========================================
 
 
@@ -290,7 +295,7 @@ class RWKVEmbryo:
             reprompt
             or (not await check_file_async(f"data/{self.default_state}/tokens.pkl"))
         ):
-            prompt_tokens = tokenizer.encode(prompt.prompt)
+            prompt_tokens = tokenizer_encode(prompt.prompt)
             prxxx(f"Process prompt tokens   length: {len(prompt_tokens)} tok", q=q)
             ltime = time.time()
             await self.process_tokens(prompt_tokens)
@@ -360,7 +365,7 @@ class RWKVEmbryo:
         tt = list(np.where(sampling.sample_probs(self.state.logits.copy()) > 0)[0])
         if tt[0] == 0:
             tt = tt[1:]
-        print(tokenizer.decode(tt))
+        print(tokenizer_decode(tt))
         return
         logit = self.logits[self.logits >= 0]
         prxxx("logits", logit[-128:])
@@ -431,7 +436,7 @@ class RWKVEmbryo:
         self.need_save = True
         await self.check_state()
 
-        self.mlog.write(tokenizer.decodeBytes([[token]])[0])
+        self.mlog.write(tokenizer_decode([token]))
         return self.state.logits, self.state.state
 
     @log_call
@@ -457,7 +462,7 @@ class RWKVEmbryo:
         self.need_save = True
         await self.check_state()
 
-        self.mlog.write(tokenizer.decodeBytes(tokens)[0])
+        self.mlog.write(tokenizer_decode(tokens))
         return self.state.logits, self.state.state
 
     async def gen_future(
@@ -488,7 +493,7 @@ class RWKVEmbryo:
                         logits, self.temperature, self.top_p
                     ).cpu().item()
                     logits, _ = await self.process_token(token)
-                    answer += tokenizer.decodeBytes([token])
+                    answer += tokenizer_decode([token])
                     if end in answer:
                         break
 
@@ -500,7 +505,7 @@ class RWKVEmbryo:
         return await getattr(self, api)(**kwargs)
 
     async def get_history(self):
-        return tokenizer.decode(self.state.processed_tokens)
+        return tokenizer_decode([self.state.processed_tokens])
 
 # ======================================== Chater Embryo ==========================================
 
@@ -525,13 +530,13 @@ class RWKVChaterEmbryo(RWKVEmbryo):
         """
         now_time = time.time()
         tokens_list = [
-            tokenizer.encode(f"{m[0]}{self.prompt.separator} {m[1]}\n\n")
+            tokenizer_encode(f"{m[0]}{self.prompt.separator} {m[1]}\n\n")
             for m in message_list
             if now_time - m[2] <= time_limit
         ]
         """
         tokens_list.append(
-            tokenizer.encode(f"{self.prompt.bot}{self.prompt.separator}")
+            tokenizer_encode(f"{self.prompt.bot}{self.prompt.separator}")
         )
         """
         prompt = []
@@ -590,11 +595,11 @@ class RWKVChater(RWKVChaterEmbryo):
         message = message.replace(
             nickname, self.prompt.bot
         )  # .strip() # 昵称和提示词不一定一致
-        head = tokenizer.encode(f"{self.prompt.bot}{self.prompt.separator}")
+        head = tokenizer_encode(f"{self.prompt.bot}{self.prompt.separator}")
 
         if message != "+":
             prompt = f"{chatuser}{self.prompt.separator} {message}\n\n"
-            await self.process_tokens(tokenizer.encode(prompt))
+            await self.process_tokens(tokenizer_encode(prompt))
 
         if self.have_interrupt:
             self.clean_interrupt()
@@ -656,7 +661,7 @@ class RWKVGroupChater(RWKVChaterEmbryo):
             self.clean_interrupt()
             raise RWKVInterruptException
         
-        head = tokenizer.encode(f"{self.prompt.bot}{self.prompt.separator}")
+        head = tokenizer_encode(f"{self.prompt.bot}{self.prompt.separator}")
         answer, original = await self.gen_future(head=head, end_of="\n\n")
         await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE)
 
@@ -686,7 +691,7 @@ class RWKVNicknameGener(RWKVEmbryo):
         self.state.processed_tokens = []
         self.state.processed_tokens_counts = {}
         new = f"{name}\n"
-        await self.process_tokens(tokenizer.encode(new))
+        await self.process_tokens(tokenizer_encode(new))
         answer, original = await self.gen_future(max_len=10, end_of="\n\n")
 
         await self.reset_state(q=True)
@@ -706,7 +711,7 @@ async def process_default_state():
 
 
 """
-print(tokenizer.decode(RWKVChaterEmbryo.gen_prompt(None,[
+print(tokenizer_decode(RWKVChaterEmbryo.gen_prompt(None,[
     ["saefsgrgdr","jgjgjghjghghgjh",time.time()-3600],
     ["hjhjvhvjhb","ftjhvjhjhjhjdsr",time.time()-2400],
     ["guiyutftfd","pohhnkftfgheshj",time.time()-1200],
