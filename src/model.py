@@ -575,7 +575,7 @@ class RWKV_RNN(nn.Module):
         token_out = None
         data_len = token.shape[1]
         for i in trange((data_len-2)//slice_len+1, desc=f"Forward chunks: *{slice_len}"):
-            await asyncio.sleep(0)
+            await asyncio.sleep(0.01)
             start = i*slice_len
             end = min((i+1)*slice_len, data_len)
             token_i = token[:, start:end]
