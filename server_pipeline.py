@@ -437,7 +437,7 @@ class RWKVEmbryo:
         self.need_save = True
         await self.check_state()
 
-        self.mlog.write(tokenizer.decodeBytesode(token[0]))
+        self.mlog.write(tokenizer.decodeBytes(token[0]))
         return self.state.logits, self.state.state
 
     @log_call
