@@ -462,7 +462,7 @@ class RWKVEmbryo:
             self.interrupt()
 
         slice_len = 8
-        while slice_len * 2 < len(token) and slice_len < MAX_CHUNK:
+        while slice_len * 2 <= len(tokens) and slice_len < MAX_CHUNK:
             slice_len *= 2
          
         async with self.state_lock:
