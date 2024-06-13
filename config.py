@@ -14,7 +14,7 @@ TEMPERATURE: float = 1.0
 # For better Q&A accuracy and less diversity, reduce top_p (to 0.5, 0.2, 0.1 etc.)
 TOP_P: float = 0.3
 # Penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.
-PRESENCE_PENALTY: float = 2.0
+PRESENCE_PENALTY: float = 1.0
 # Penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.
 FREQUENCY_PENALTY: float = 2.0
 # When the model repeats several words, the penalty will increase sharply and pull the model back, set it to 1.0-1.2 is a good idea.
@@ -22,12 +22,14 @@ PRPEAT_PENALTY: float = 1.05
 # Mitigating penalties after a certain length of context
 PENALTY_MITIGATE: float = 1.02
 # How engaged a model is with prompt, which could be used to mitigate Alzheimer's disease in small models
-OBSTINATE: float = 0.3
+OBSTINATE: float = 0.1
 
 MAX_GENERATION_LENGTH: int = 128
 END_OF_TEXT_TOKEN: int = 0
 
 THREADS: int = 3
+
+SEED = None
 
 MODEL_NAME: str = "weight/RWKV-x060-World-7B-v2.1-20240507-ctx4096"
 # MODEL_NAME = "/home/yuchuxi/RWKV-LM-ROCm/RWKV-v5/out/L24-D2048-x060/rwkv-0.pth"
@@ -36,7 +38,6 @@ MODEL_STATE_NAME: str = "default.state"
 
 TONKEIZER_DICT: str = "asset/rwkv_vocab_v20230424.txt"
 
-torch.random.manual_seed(int(time.time() * 1e6 % 2**30))
 
 
 # ========================================= App settings ==========================================

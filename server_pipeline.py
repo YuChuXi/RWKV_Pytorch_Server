@@ -41,6 +41,7 @@ from config import (
     OBSTINATE,
     END_OF_TEXT_TOKEN,
     THREADS,
+    SEED,
     MODEL_NAME,
     MODEL_STATE_NAME,
     TONKEIZER_DICT,
@@ -53,6 +54,9 @@ if RWKV_DEVICE == "musa":
     import torch_musa
 elif RWKV_DEVICE == "npu":
     import torch_npu
+
+torch.random.manual_seed(int(time.time() * 1e6 % 2**30) if SEED is None else SEED)
+torch.set_num_threads(THREADS)
 
 prxxx(f"Loading RWKV model   file: {MODEL_NAME}")
 model = RWKV_RNN(args = {
