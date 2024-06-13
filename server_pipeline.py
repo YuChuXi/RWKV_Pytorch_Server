@@ -497,7 +497,7 @@ class RWKVEmbryo:
                         logits, self.temperature, self.top_p
                     ).cpu().item()
                     logits, _ = await self.process_token(token)
-                    answer += tokenizer_decode([token])
+                    answer += tokenizer.decodeBytes([token])
                     if end in answer:
                         break
 
