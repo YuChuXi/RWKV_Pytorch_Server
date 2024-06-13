@@ -13,6 +13,7 @@ import numpy as np
 from typing import Tuple
 from .model_utils import RWKV_x060
 from tqdm import trange, tqdm
+import asyncio
 
 
 class RWKV_Block(nn.Module):
@@ -552,7 +553,29 @@ class RWKV_RNN(nn.Module):
         """
         token_out = None
         data_len = token.shape[1]
-        for i in range((data_len-2)//slice_len+1):
+        for i in trange((data_len-2)//slice_len+1, desc="Forward chunks"):
+            start = i*slice_len
+            end = min((i+1)*slice_len, data_len)
+            token_i = token[:, start:end]
+            token_out, state_new = self.forward_parallel(token_i, state)
+            state = state_new.detach()  # 使用 detach() 截断梯度传播, 训练使用
+        if token_out is None:
+            raise ValueError(str(token))
+        return token_out, state
+
+    async def forward_parallel_slices_async(self, token: torch.Tensor, state: torch.Tensor, slice_len: int = 64) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        模型的分段并行前向传播，减少显存/内存使用。
+        Args:
+            token (torch.Tensor): 输入的令牌张量。[Batch_size, L]
+            state (torch.Tensor): 隐藏状态张量。[Batch_size, State_size, N_embd]
+        Returns:
+            torch.Tensor: 模型输出。
+        """
+        token_out = None
+        data_len = token.shape[1]
+        for i in trange((data_len-2)//slice_len+1, desc="Forward chunks"):
+            await asyncio.sleep(0)
             start = i*slice_len
             end = min((i+1)*slice_len, data_len)
             token_i = token[:, start:end]
