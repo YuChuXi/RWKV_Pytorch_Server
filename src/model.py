@@ -422,7 +422,7 @@ class RWKV_RNN(nn.Module):
         
         # 将所有权重转换为float32
         self.num_layer = 0
-        for k in w.keys():
+        for k in tqdm(w.keys(), desc="Convert weights"):
             if self.dataformat == 'fp32':
                 w[k] = w[k].float()
             elif self.dataformat == 'fp16':
@@ -454,7 +454,7 @@ class RWKV_RNN(nn.Module):
 
         self.blocks = nn.ModuleList()
         
-        for i in range(self.num_layer):
+        for i in trange(self.num_layer, desc="Load layers", unit="layer"):
             # 提取当前块的权重
             block_w = {k[len(f'blocks.{i}.'):]: v for k, v in w.items() if f'blocks.{i}.' in k}
             self.blocks.append(RWKV_Block(block_w, self.n_embd, self.n_head, self.args, self.onnx_opset))
