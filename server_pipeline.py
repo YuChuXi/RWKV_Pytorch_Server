@@ -74,11 +74,11 @@ else:
     with open(f"data/tokenizer_pkl", "wb") as f:
         pickle.dump(tokenizer, f)
 
-def tokenizer_encode(s:str)->List[int]:
-    return tokenizer.encode([str])[0]
+def tokenizer_encode(s:str)->List[List[int]]:
+    return tokenizer.encode([str])
 
-def tokenizer_decode(l:List[int]):
-    return tokenizer.decodeBytes(l).decode(encoding="utf-8", errors="ignore")
+def tokenizer_decode(l:List[List[int]]) -> str:
+    return tokenizer.decodeBytes(l[0]).decode(encoding="utf-8", errors="ignore")
 # ========================================= Embryo states =========================================
 
 
