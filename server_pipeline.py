@@ -454,6 +454,7 @@ class RWKVEmbryo:
 
         if len(tokens) == 0:
             return self.state.logits, self.state.state
+        
         if self.is_busy():
             self.interrupt()
 
@@ -537,6 +538,8 @@ class RWKVChaterEmbryo(RWKVEmbryo):
         #    u  m  t
         ]
         """
+        if len(message_list) == 0:
+            return []
         now_time = time.time()
         tokens_list = [
             tokenizer_encode(f"{m[0]}{self.prompt.separator} {m[1]}\n\n")
@@ -604,11 +607,12 @@ class RWKVChater(RWKVChaterEmbryo):
         message = message.replace(
             nickname, self.prompt.bot
         )  # .strip() # 昵称和提示词不一定一致
-        head = tokenizer_encode(f"{self.prompt.bot}{self.prompt.separator}")
 
+        head = []
         if message != "+":
             prompt = f"{chatuser}{self.prompt.separator} {message}\n\n"
             await self.process_tokens(tokenizer_encode(prompt))
+            head = tokenizer_encode(f"{self.prompt.bot}{self.prompt.separator}")
 
         if self.have_interrupt:
             self.clean_interrupt()
@@ -652,6 +656,10 @@ class RWKVGroupChater(RWKVChaterEmbryo):
 
         if "+reset" in message:
             await self.reset_state()
+            return
+        
+        if "+" == message[0]:
+            self.message_cache.clear()
             return
 
         self.message_cache.append([chatuser, message, time.time()])
