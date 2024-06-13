@@ -497,7 +497,9 @@ class RWKV_RNN(nn.Module):
         Returns:
             torch.Tensor: 模型输出。
         """
-        x = self.emb(token)
+        x = self.emb(token.to(self.emb.weight.device))
+        state = torch.zeros(x.size(0), self.state_size[0], self.state_size[1], dtype=x.dtype, device=x.device) if state is None else state
+
         if self.onnx_opset >= 17:
             x = self.ln0(x)
         else:
@@ -522,7 +524,9 @@ class RWKV_RNN(nn.Module):
         Returns:
             torch.Tensor: 模型输出。
         """
-        x = self.emb(token)
+        x = self.emb(token.to(self.emb.weight.device))
+        state = torch.zeros(x.size(0), self.state_size[0], self.state_size[1], dtype=x.dtype, device=x.device) if state is None else state
+
         if self.onnx_opset >= 17:
             x = self.ln0(x)
         else:
@@ -556,7 +560,7 @@ class RWKV_RNN(nn.Module):
         
         return token_out, state
 
-    def init_state(self, batch_size: int) -> torch.Tensor:
+    def init_state(self, batch_size: int, state_name:str = None) -> torch.Tensor:
         """
         初始化状态。
         rgs:
@@ -568,8 +572,10 @@ class RWKV_RNN(nn.Module):
         state = torch.zeros(batch_size, self.state_size[0], self.state_size[1])
 
         # 这里把训练好的state加载进去
-        if 'STATE_NAME' in self.args and self.args['STATE_NAME'] != '':
-            STATE = torch.load(self.args['STATE_NAME'].replace(
+        if state_name is None and 'STATE_NAME' in self.args and self.args['STATE_NAME'] != '':
+            state_name = self.args['STATE_NAME']
+        if not state_name is None:
+            STATE = torch.load(state_name.replace(
                 ".pth", "")+'.pth', map_location=torch.device("cpu"))
             head_size = self.head_size
             for i, (key, value) in enumerate(STATE.items()):
