@@ -455,7 +455,7 @@ class RWKVEmbryo:
         #self.logits[END_OF_LINE_TOKEN] += new_line_logit_bias
         """
 
-        if len(tokens) == 0:
+        if len(tokens[0]) == 0:
             self.state.logits, self.state.state
         if self.is_busy():
             self.interrupt()
