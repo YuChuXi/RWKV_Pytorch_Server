@@ -430,13 +430,13 @@ class RWKVEmbryo:
         await asyncio.sleep(0)
         with torch.no_grad():
             self.state.logits, self.state.state = model.forward(
-                torch.tensor(token).reshape((1, -1)), self.state.state
+                torch.tensor(token), self.state.state
             )
-        await self.process_processed_tokens_counts(token)
+        await self.process_processed_tokens_counts(token[0])
         self.need_save = True
         await self.check_state()
 
-        self.mlog.write(tokenizer_decode([token]))
+        self.mlog.write(tokenizer_decode(token))
         return self.state.logits, self.state.state
 
     @log_call
@@ -457,7 +457,7 @@ class RWKVEmbryo:
                 t_tokens = torch.tensor(tokens).reshape((1, -1)).long().to(RWKV_DEVICE)
                 self.state.logits, self.state.state = model.forward_parallel_slices(t_tokens, self.state.state)
         
-        for token in tokens:
+        for token in tokens[0]:
             await self.process_processed_tokens_counts(token)
         self.need_save = True
         await self.check_state()
