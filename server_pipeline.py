@@ -429,6 +429,7 @@ class RWKVEmbryo:
     async def process_token(self, token: int) -> Tuple[torch.Tensor, torch.Tensor]:
         await asyncio.sleep(0)
         with torch.no_grad():
+            print(token)
             self.state.logits, self.state.state = model.forward(
                 torch.tensor(token), self.state.state
             )
@@ -454,8 +455,7 @@ class RWKVEmbryo:
             self.interrupt()
         async with self.state_lock:
             with torch.no_grad():
-                t_tokens = torch.tensor(tokens).reshape((1, -1)).long().to(RWKV_DEVICE)
-                self.state.logits, self.state.state = model.forward_parallel_slices(t_tokens, self.state.state, slice_len=128)
+                self.state.logits, self.state.state = model.forward_parallel_slices(torch.tensor(tokens).long().to(RWKV_DEVICE), self.state.state, slice_len=128)
                 self.state.logits = self.state.logits[:, -1]
         
         for token in tokens[0]:
