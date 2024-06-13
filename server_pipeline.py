@@ -563,6 +563,8 @@ class RWKVChaterEmbryo(RWKVEmbryo):
         return prompt
 
     async def is_want_to_say(self, head: List[int]) -> bool:
+        if len(head) == 0:
+            return True
         probs = sampler.probs_logits(
             self.state.logits.clone(), self.temperature, self.top_p
         ).cpu()
