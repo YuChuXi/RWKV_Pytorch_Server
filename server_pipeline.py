@@ -327,13 +327,13 @@ class RWKVEmbryo:
                 if await self.state.load(state_name) is None:
                     continue
                     
+                prxxx(f"Load state   name: {state_name}", q=q)
+                self.mlog.write(f" : Load state [{state_name}]\n\n".encode(encoding="utf-8"))
                 if state_name != self.id: # 如果不是ID存档则缓存
                     state_cache[state_name] = await self.state.copy()
                     prxxx(f"Cache state   name: {state_name}", q=q)
                 self.need_save = True
-            prxxx(f"Load state   name: {state_name}", q=q)
-            self.mlog.write(f" : Load state [{state_name}]\n\n".encode(encoding="utf-8"))
-            return
+                return
 
     @log_call
     async def save_state(
