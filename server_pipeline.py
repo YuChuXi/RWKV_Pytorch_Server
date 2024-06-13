@@ -436,7 +436,7 @@ class RWKVEmbryo:
         self.need_save = True
         await self.check_state()
 
-        self.mlog.write(tokenizer_decode(token))
+        self.mlog.write(tokenizer.decodeBytesode(token[0]))
         return self.state.logits, self.state.state
 
     @log_call
@@ -462,7 +462,7 @@ class RWKVEmbryo:
         self.need_save = True
         await self.check_state()
 
-        self.mlog.write(tokenizer_decode(tokens))
+        self.mlog.write(tokenizer.decodeBytes(tokens[0]))
         return self.state.logits, self.state.state
 
     async def gen_future(
