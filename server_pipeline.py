@@ -41,6 +41,7 @@ from config import (
     OBSTINATE,
     END_OF_TEXT_TOKEN,
     THREADS,
+    MAX_CHUNK,
     SEED,
     MODEL_NAME,
     MODEL_STATE_NAME,
@@ -461,7 +462,7 @@ class RWKVEmbryo:
             self.interrupt()
 
         slice_len = 8
-        while slice_len * 2 < len(token) and slice_len < 4096:
+        while slice_len * 2 < len(token) and slice_len < MAX_CHUNK:
             slice_len *= 2
          
         async with self.state_lock:
