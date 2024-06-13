@@ -429,13 +429,12 @@ class RWKVEmbryo:
     async def process_token(self, token: int) -> Tuple[torch.Tensor, torch.Tensor]:
         await asyncio.sleep(0)
 
-        async with self.state_lock:
-            with torch.no_grad():
-                print(token)
-                self.state.logits, self.state.state = model.forward(
-                    torch.tensor([token]), self.state.state
-                )
-                self.state.logits = self.state.logits.squeeze()
+        with torch.no_grad():
+            print(token)
+            self.state.logits, self.state.state = model.forward(
+                torch.tensor([token]), self.state.state
+            )
+            self.state.logits = self.state.logits.squeeze()
         await self.process_processed_tokens_counts(token)
         self.need_save = True
         await self.check_state()
@@ -487,7 +486,7 @@ class RWKVEmbryo:
                 desc="Processing future",
                 leave=False,
                 unit=" tok",
-            ):
+            ):  
                 await asyncio.sleep(0)
                 if i < len_head:
                     token = head[i]
