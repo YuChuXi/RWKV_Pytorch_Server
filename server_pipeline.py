@@ -314,7 +314,7 @@ class RWKVEmbryo:
         state_names = [self.default_state, MODEL_STATE_NAME]
 
         async with self.state_lock:
-            loaded = self.state.load(state_name)
+            loaded = await self.state.load(state_name)
             if loaded:
                 prxxx(f"Load state   name: {state_name}", q=q)
                 self.mlog.write(f" : Load state [{state_name}]\n\n".encode(encoding="utf-8"))
@@ -323,7 +323,7 @@ class RWKVEmbryo:
                 await asyncio.sleep(0)
 
                 if name not in state_cache:
-                    if state := RWKVState().load(name):
+                    if state := await (RWKVState().load(name)):
                         state_cache[name] = state
                         prxxx(f"Cache state   name: {name}", q=q)
                         
