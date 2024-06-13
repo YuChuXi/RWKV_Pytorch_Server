@@ -520,7 +520,7 @@ class RWKVEmbryo:
         return await getattr(self, api)(**kwargs)
 
     async def get_history(self):
-        return tokenizer_decode([self.state.processed_tokens])
+        return tokenizer_decode(self.state.processed_tokens)
 
 # ======================================== Chater Embryo ==========================================
 
