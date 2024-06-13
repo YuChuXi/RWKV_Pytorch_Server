@@ -74,11 +74,11 @@ else:
     with open(f"data/tokenizer_pkl", "wb") as f:
         pickle.dump(tokenizer, f)
 
-def tokenizer_encode(s:str)->List[List[int]]:
-    return tokenizer.encode([str])
+def tokenizer_encode(s:str)->List[int]:
+    return tokenizer.encode([str])[0]
 
-def tokenizer_decode(l:List[List[int]]) -> str:
-    return tokenizer.decodeBytes(l[0]).decode(encoding="utf-8", errors="ignore")
+def tokenizer_decode(l:List[int]) -> str:
+    return tokenizer.decodeBytes(l).decode(encoding="utf-8", errors="ignore")
 # ========================================= Embryo states =========================================
 
 
@@ -428,16 +428,19 @@ class RWKVEmbryo:
     @log_call
     async def process_token(self, token: int) -> Tuple[torch.Tensor, torch.Tensor]:
         await asyncio.sleep(0)
-        with torch.no_grad():
-            print(token)
-            self.state.logits, self.state.state = model.forward(
-                torch.tensor(token), self.state.state
-            )
-        await self.process_processed_tokens_counts(token[0])
+
+        async with self.state_lock:
+            with torch.no_grad():
+                print(token)
+                self.state.logits, self.state.state = model.forward(
+                    torch.tensor([token]), self.state.state
+                )
+                self.state.logits = self.state.logits.squeeze()
+        await self.process_processed_tokens_counts(token)
         self.need_save = True
         await self.check_state()
 
-        self.mlog.write(tokenizer.decodeBytes(token[0]))
+        self.mlog.write(tokenizer.decodeBytes([token]))
         return self.state.logits, self.state.state
 
     @log_call
@@ -455,15 +458,16 @@ class RWKVEmbryo:
             self.interrupt()
         async with self.state_lock:
             with torch.no_grad():
-                self.state.logits, self.state.state = model.forward_parallel_slices(torch.tensor(tokens).long().to(RWKV_DEVICE), self.state.state, slice_len=128)
+                self.state.logits, self.state.state = model.forward_parallel_slices(torch.tensor([tokens]).long().to(RWKV_DEVICE), self.state.state, slice_len=128)
                 self.state.logits = self.state.logits[:, -1]
+                self.state.logits = self.state.logits.squeeze()
         
-        for token in tokens[0]:
+        for token in tokens:
             await self.process_processed_tokens_counts(token)
         self.need_save = True
         await self.check_state()
 
-        self.mlog.write(tokenizer.decodeBytes(tokens[0]))
+        self.mlog.write(tokenizer.decodeBytes(tokens))
         return self.state.logits, self.state.state
 
     async def gen_future(
@@ -487,7 +491,7 @@ class RWKVEmbryo:
                 await asyncio.sleep(0)
                 if i < len_head:
                     token = head[i]
-                    logits, _ = await self.process_token([token])
+                    logits, _ = await self.process_token(token)
                 else:
                     logits = await self.process_token_penalty(logits)
                     token: int = sampler.sample_logits(
@@ -596,7 +600,7 @@ class RWKVChater(RWKVChaterEmbryo):
         message = message.replace(
             nickname, self.prompt.bot
         )  # .strip() # 昵称和提示词不一定一致
-        head = tokenizer_encode(f"{self.prompt.bot}{self.prompt.separator}")[0]
+        head = tokenizer_encode(f"{self.prompt.bot}{self.prompt.separator}")
 
         if message != "+":
             prompt = f"{chatuser}{self.prompt.separator} {message}\n\n"
@@ -662,7 +666,7 @@ class RWKVGroupChater(RWKVChaterEmbryo):
             self.clean_interrupt()
             raise RWKVInterruptException
         
-        head = tokenizer_encode(f"{self.prompt.bot}{self.prompt.separator}")[0]
+        head = tokenizer_encode(f"{self.prompt.bot}{self.prompt.separator}")
         answer, original = await self.gen_future(head=head, end_of="\n\n")
         await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE)
 
