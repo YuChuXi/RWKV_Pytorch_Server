@@ -317,7 +317,7 @@ class RWKVEmbryo:
             loaded = self.state.load(state_name)
             if loaded:
                 prxxx(f"Load state   name: {state_name}", q=q)
-                self.mlog.write(f" : Load state [{name}]\n\n".encode(encoding="utf-8"))
+                self.mlog.write(f" : Load state [{state_name}]\n\n".encode(encoding="utf-8"))
 
             for name in state_names: # 检查缓存 & 加载
                 await asyncio.sleep(0)
