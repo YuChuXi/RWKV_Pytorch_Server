@@ -64,7 +64,7 @@ model = RWKV_RNN(args = {
     }).to(RWKV_DEVICE)
     
 check_dir("data")
-if check_file(f"data/tokenizer_pkl"):
+if check_file(f"data/tokenizer.pkl"):
     prxxx(f"Loading tokenizer   file: data/tokenizer.pkl")
     with open(f"data/tokenizer.pkl", "rb") as f:
         tokenizer: RWKV_TOKENIZER = pickle.load(f)
