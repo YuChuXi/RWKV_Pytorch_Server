@@ -4,3 +4,5 @@
 *.log
 *.pkl
 rwkv_vocab_v20230424.txt
+data/*
+onnx/*

@@ -60,6 +60,7 @@ model = RWKV_RNN(args = {
         'vocab_size': 65536,
         'device': RWKV_DEVICE,
         'onnx_opset': '18',
+        'dataformat': 'bf16'
     }).to(RWKV_DEVICE)
     
 check_dir("data")
