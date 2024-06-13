@@ -436,7 +436,7 @@ class RWKVEmbryo:
         self.need_save = True
         await self.check_state()
 
-        self.mlog.write(tokenizer_decode(token))
+        self.mlog.write(tokenizer.decodeBytesode(token[0]))
         return self.state.logits, self.state.state
 
     @log_call
@@ -455,14 +455,15 @@ class RWKVEmbryo:
         async with self.state_lock:
             with torch.no_grad():
                 t_tokens = torch.tensor(tokens).reshape((1, -1)).long().to(RWKV_DEVICE)
-                self.state.logits, self.state.state = model.forward_parallel_slices(t_tokens, self.state.state)
+                self.state.logits, self.state.state = model.forward_parallel_slices(t_tokens, self.state.state, slice_len=128)
+                self.state.logits = self.state.logits[:, -1]
         
         for token in tokens[0]:
             await self.process_processed_tokens_counts(token)
         self.need_save = True
         await self.check_state()
 
-        self.mlog.write(tokenizer_decode(tokens))
+        self.mlog.write(tokenizer.decodeBytes(tokens[0]))
         return self.state.logits, self.state.state
 
     async def gen_future(
