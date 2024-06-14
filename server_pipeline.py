@@ -609,11 +609,14 @@ class RWKVChater(RWKVChaterEmbryo):
             nickname, self.prompt.bot
         )  # .strip() # 昵称和提示词不一定一致
 
-        head = []
-        if message != "+":
+        head = tokenizer_encode(f"{self.prompt.bot}{self.prompt.separator}")
+        if message != "" and message[0] != "+":
             prompt = f"{chatuser}{self.prompt.separator} {message}\n\n"
             await self.process_tokens(tokenizer_encode(prompt))
-            head = tokenizer_encode(f"{self.prompt.bot}{self.prompt.separator}")
+            
+        if len(message) >2 and message[:2] == "++":
+            await self.process_tokens(tokenizer_encode(message[2:]))
+            head = []
 
         if self.have_interrupt:
             self.clean_interrupt()
@@ -680,6 +683,7 @@ class RWKVGroupChater(RWKVChaterEmbryo):
             raise RWKVInterruptException
         
         head = tokenizer_encode(f"{self.prompt.bot}{self.prompt.separator}")
+
         answer, original = await self.gen_future(head=head, end_of="\n\n")
         await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE)
 
