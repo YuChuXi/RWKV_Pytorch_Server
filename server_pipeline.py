@@ -525,7 +525,7 @@ class RWKVEmbryo:
                     token = head[i]
                     logits, _ = await self.process_token(token)
                 else:
-                    logits = await self.process_token_penalty(logits)
+                    logits = await self.process_token_penalty(logits, i)
                     token: int = (
                         sampler.sample_logits(logits, self.temperature, self.top_p)
                         .cpu()
