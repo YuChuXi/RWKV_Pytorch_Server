@@ -680,12 +680,14 @@ class RWKVGroupChater(RWKVChaterEmbryo):
         self.plog = open(f"data/{self.id}/pipeline.log", "a+")
 
     def save_state(self, state_name: str, must: bool = False, q: bool = False) -> None:
+        r = super().save_state(state_name, must, q)
         self.plog.flush()
-        return super().save_state(state_name, must, q)
+        return r
 
     def reset_state(self, q: bool = False):
+        r = super().reset_state(q)
         self.message_cache.clear()
-        return super().reset_state(q)
+        return r
 
     async def send_message(self, message: str, chatuser: str = None) -> None:
         self.plog.write(f"{chatuser}: {message}\n\n")
