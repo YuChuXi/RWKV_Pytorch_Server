@@ -27,14 +27,18 @@ OBSTINATE: float = 0.3
 MAX_GENERATION_LENGTH: int = 384
 END_OF_TEXT_TOKEN: int = 0
 NEW_LINE_OF_TEXT_TOKEN: int = 261
-NEW_LINE_LORA:float = 1.008
+NEW_LINE_LORA:float = 1.002
 
 THREADS: int = 3
 MAX_CHUNK = 1024
 SEED = None
 
 MODEL_NAME: str = "weight/RWKV-x060-World-7B-v2.1-20240507-ctx4096"
-# MODEL_NAME = "/home/yuchuxi/RWKV-LM-ROCm/RWKV-v5/out/L24-D2048-x060/rwkv-0.pth"
+# MODEL_NAME = "/home/yuchuxi/RWKV-LM-ROCm/RWKV-v5/out/L24-D2048-x060/rwkv-0"
+MODEL_NAME = "weight/RWKV-6-v2-ctx4096.roleplay"
+MODEL_NAME = "weight/RWKV-x060-World-1B6-v2.1-20240328-ctx4096"
+MODEL_NAME = "weight/RWKV-x060-World-3B-v2.1-Claude-nsfw"
+
 
 MODEL_STATE_NAME: str = "default.state"
 
