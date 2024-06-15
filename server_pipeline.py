@@ -214,6 +214,7 @@ class RWKVPrompt:
             self.bot = None
             self.separator = None
             self.ignore = None
+            self.multiuser = False
         else:
             prompt_config = f"prompt/{language}-{type}.json"
             if not file is None:
@@ -228,6 +229,7 @@ class RWKVPrompt:
                 self.separator = prompt_data.get("separator", ":")
                 self.prompt = prompt_data.get("prompt", "")
                 self.ignore = prompt_data.get("ignore", "")
+                self.multiuser = prompt_data.get("multiuser", False)
                 if check_file(self.prompt):
                     with open(self.prompt, "r", encoding="utf-8", errors="ignore") as f:
                         self.prompt = f.read()
@@ -618,8 +620,6 @@ class RWKVChater(RWKVChaterEmbryo):
         debug: bool = False,
     ) -> Tuple[str, str, bool]:
         self.debug = debug
-        chatuser = self.prompt.user if chatuser is None or chatuser == "" else chatuser
-        nickname = self.prompt.bot if nickname is None or nickname == "" else nickname
 
         if "-temp=" in message:
             temperature = float(message.split("-temp=")[1].split(" ")[0])
@@ -635,10 +635,15 @@ class RWKVChater(RWKVChaterEmbryo):
             await self.reset_state()
             return " : Done", " : Done", True
 
-        message = message.replace(chatuser, self.prompt.user)
+        nickname = self.prompt.bot if nickname is None or nickname == "" else nickname
         message = message.replace(
             nickname, self.prompt.bot
         )  # .strip() # 昵称和提示词不一定一致
+
+        if self.prompt.multiuser:
+            chatuser = self.prompt.user if chatuser is None or chatuser == "" else chatuser
+        else:
+            message = message.replace(chatuser, self.prompt.user) if chatuser is None or chatuser == "" else message
 
         head = tokenizer_encode(f"{self.prompt.bot}{self.prompt.separator}")
         if message != "" and message[0] != "+":
@@ -696,6 +701,22 @@ class RWKVGroupChater(RWKVChaterEmbryo):
         if "+" == message[0]:
             self.message_cache.clear()
             return
+
+        assert self.prompt.multiuser , "Group Chat need multiuser prompt!"
+
+        if "-temp=" in message:
+            temperature = float(message.split("-temp=")[1].split(" ")[0])
+            message = message.replace("-temp=" + f"{temperature:g}", "")
+            self.temperature = max(0.2, min(temperature, 5.0))
+
+        if "-top_p=" in message:
+            top_p = float(message.split("-top_p=")[1].split(" ")[0])
+            message = message.replace("-top_p=" + f"{top_p:g}", "")
+            self.top_p = max(0.2, min(top_p, 5.0))
+
+        if "+reset" in message:
+            await self.reset_state()
+            return " : Done", " : Done", True
 
         self.message_cache.append([chatuser, message, time.time()])
         if len(self.message_cache) > 128:
