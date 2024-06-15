@@ -24,7 +24,7 @@ PENALTY_MITIGATE: float = 1.02
 # How engaged a model is with prompt, which could be used to mitigate Alzheimer's disease in small models
 OBSTINATE: float = 0.3
 
-MAX_GENERATION_LENGTH: int = 1024
+MAX_GENERATION_LENGTH: int = 384
 END_OF_TEXT_TOKEN: int = 0
 NEW_LINE_OF_TEXT_TOKEN: int = 261
 NEW_LINE_LORA:float = 1.008
