@@ -677,12 +677,19 @@ class RWKVGroupChater(RWKVChaterEmbryo):
     ):
         super().__init__(id, state_name, prompt)
         self.message_cache: List[List[object]] = []
+        self.plog = open(f"data/{self.id}/pipeline.log", "a+")
+
+    def save_state(self, state_name: str, must: bool = False, q: bool = False) -> None:
+        self.plog.flush()
+        return super().save_state(state_name, must, q)
 
     def reset_state(self, q: bool = False):
         self.message_cache.clear()
         return super().reset_state(q)
 
     async def send_message(self, message: str, chatuser: str = None) -> None:
+        self.plog.write(f"{chatuser}: {message}\n\n")
+
         chatuser = self.prompt.user if chatuser is None or chatuser == "" else chatuser
         if "-temp=" in message:
             temperature = float(message.split("-temp=")[1].split(" ")[0])
@@ -726,6 +733,8 @@ class RWKVGroupChater(RWKVChaterEmbryo):
         self,
         nickname: str = None,
     ) -> Tuple[str, str, bool]:
+        self.plog.write(f"{nickname}: ")
+
         nickname = self.prompt.bot if nickname is None or nickname == "" else nickname
         await self.process_tokens(await self.gen_prompt(self.message_cache))
         self.message_cache.clear()
@@ -741,6 +750,7 @@ class RWKVGroupChater(RWKVChaterEmbryo):
 
         answer = answer.replace(self.prompt.bot, nickname).strip()
 
+        self.plog.write(f"{answer}\n\n")
         return answer, original, await self.is_want_to_say(head)
 
 
