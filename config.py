@@ -10,13 +10,13 @@ RWKV_DEVICE = "cuda"
 # ======================================== Script settings ========================================
 
 # Sampling temperature. It could be a good idea to increase temperature when top_p is low.
-TEMPERATURE: float = 1.0
+TEMPERATURE: float = 1.3
 # For better Q&A accuracy and less diversity, reduce top_p (to 0.5, 0.2, 0.1 etc.)
-TOP_P: float = 0.3
+TOP_P: float = 0.2
 # Penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.
-PRESENCE_PENALTY: float = 1.0
+PRESENCE_PENALTY: float = 0.0
 # Penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.
-FREQUENCY_PENALTY: float = 2.0
+FREQUENCY_PENALTY: float = 1.0
 # When the model repeats several words, the penalty will increase sharply and pull the model back, set it to 1.0-1.2 is a good idea.
 PRPEAT_PENALTY: float = 1.05
 # Mitigating penalties after a certain length of context
