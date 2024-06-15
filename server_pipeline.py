@@ -26,20 +26,22 @@ from utils import (
     use_async_lock,
     check_dir_async,
     check_file_async,
-    run_in_async_thread
+    run_in_async_thread,
 )
 
 from config import (
     RWKV_DEVICE,
-    MAX_GENERATION_LENGTH,
     TEMPERATURE,
     TOP_P,
     PRESENCE_PENALTY,
     FREQUENCY_PENALTY,
     PRPEAT_PENALTY,
-    PENALTY_MITIGATE,
     OBSTINATE,
+    PENALTY_MITIGATE,
+    MAX_GENERATION_LENGTH,
     END_OF_TEXT_TOKEN,
+    NEW_LINE_OF_TEXT_TOKEN,
+    NEW_LINE_LORA,
     THREADS,
     MAX_CHUNK,
     SEED,
@@ -49,7 +51,7 @@ from config import (
     CHAT_LANGUAGE,
     CHAT_PROMPT_TYPE,
     NICKGENER_PROMPT,
-)    
+)
 
 if RWKV_DEVICE == "musa":
     import torch_musa
@@ -60,14 +62,16 @@ torch.random.manual_seed(int(time.time() * 1e6 % 2**30) if SEED is None else SEE
 torch.set_num_threads(THREADS)
 
 prxxx(f"Loading RWKV model   file: {MODEL_NAME}")
-model = RWKV_RNN(args = {
-        'MODEL_NAME': MODEL_NAME,
-        'vocab_size': 65536,
-        'device': RWKV_DEVICE,
-        'onnx_opset': '18',
-        'dataformat': 'bf16'
-    }).to(RWKV_DEVICE)
-    
+model = RWKV_RNN(
+    args={
+        "MODEL_NAME": MODEL_NAME,
+        "vocab_size": 65536,
+        "device": RWKV_DEVICE,
+        "onnx_opset": "18",
+        "dataformat": "bf16",
+    }
+).to(RWKV_DEVICE)
+
 check_dir("data")
 if check_file(f"data/tokenizer.pkl"):
     prxxx(f"Loading tokenizer   file: data/tokenizer.pkl")
@@ -79,11 +83,15 @@ else:
     with open(f"data/tokenizer.pkl", "wb") as f:
         pickle.dump(tokenizer, f)
 
-def tokenizer_encode(s:str)->List[int]:
+
+def tokenizer_encode(s: str) -> List[int]:
     return tokenizer.encode([s])[0]
 
-def tokenizer_decode(l:List[int]) -> str:
+
+def tokenizer_decode(l: List[int]) -> str:
     return tokenizer.decodeBytes(l).decode(encoding="utf-8", errors="ignore")
+
+
 # ========================================= Embryo states =========================================
 
 
@@ -106,7 +114,7 @@ class RWKVState:
                 },
                 f,
             )
-        #np.save(f"data/{state_name}/state.npy", (np.arcsinh(self.state) * 24).clip(-128,127).astype(np.int8))
+        # np.save(f"data/{state_name}/state.npy", (np.arcsinh(self.state) * 24).clip(-128,127).astype(np.int8))
         torch.save(self.state, f"data/{state_name}/state.pth")
         return self
 
@@ -121,7 +129,7 @@ class RWKVState:
                 },
                 f,
             )
-        #np.save(f"data/{state_name}/state.npy", (np.arcsinh(self.state) * 24).clip(-128,127).astype(np.int8))
+        # np.save(f"data/{state_name}/state.npy", (np.arcsinh(self.state) * 24).clip(-128,127).astype(np.int8))
         torch.save(self.state, f"data/{state_name}/state.pth")
         return self
 
@@ -136,7 +144,7 @@ class RWKVState:
         self.processed_tokens: List[int] = data["processed_tokens"]
         self.logits: torch.Tensor = data["logits"]
         self.processed_tokens_counts: Dict[int, int] = data["processed_tokens_counts"]
-        #self.state: torch.Tensor = np.sinh(np.load(f"data/{state_name}/state.npy").astype(np.float32) / 24)
+        # self.state: torch.Tensor = np.sinh(np.load(f"data/{state_name}/state.npy").astype(np.float32) / 24)
         with torch.no_grad():
             self.state: torch.Tensor = torch.load(f"data/{state_name}/state.pth")
         return self
@@ -180,7 +188,7 @@ class RWKVState:
         self.logits = torch.maximum(self.logits, state.logits)
 
         return self
-    
+
     def size(self):
         return self.__sizeof__()
 
@@ -308,7 +316,9 @@ class RWKVEmbryo:
             prxxx(f"Processed prompt tokens   used: {int(time.time()-ltime)} s", q=q)
             await self.save_state(self.id, must=True, q=q)
             await self.save_state(self.default_state, must=True, q=q)
-            self.mlog.write(f" : Load prompt [\"{prompt.prompt}\"]\n\n".encode(encoding="utf-8"))
+            self.mlog.write(
+                f' : Load prompt ["{prompt.prompt}"]\n\n'.encode(encoding="utf-8")
+            )
             return
 
         state_names = [self.default_state, MODEL_STATE_NAME]
@@ -317,11 +327,13 @@ class RWKVEmbryo:
             loaded = await self.state.load(state_name)
             if loaded:
                 prxxx(f"Load state   name: {state_name}", q=q)
-                self.mlog.write(f" : Load state [{state_name}]\n\n".encode(encoding="utf-8"))
-            for name in state_names: # 检查缓存 & 加载
+                self.mlog.write(
+                    f" : Load state [{state_name}]\n\n".encode(encoding="utf-8")
+                )
+            for name in state_names:  # 检查缓存 & 加载
                 await asyncio.sleep(0)
                 if name not in state_cache:
-                    if state := await (RWKVState().load(name)):
+                    if state := await RWKVState().load(name):
                         state_cache[name] = state
                         prxxx(f"Cache state   name: {name}", q=q)
                 if loaded:
@@ -329,7 +341,9 @@ class RWKVEmbryo:
                 if name in state_cache:
                     loaded = self.state = await state_cache[name].copy()
                     prxxx(f"Load state from cache   name: {name}", q=q)
-                    self.mlog.write(f" : Load state [{name}]\n\n".encode(encoding="utf-8"))
+                    self.mlog.write(
+                        f" : Load state [{name}]\n\n".encode(encoding="utf-8")
+                    )
             return
 
     @log_call
@@ -340,7 +354,9 @@ class RWKVEmbryo:
             async with self.state_lock:
                 await self.state.save(state_name)
             prxxx(f"Save state   name: {state_name}", q=q)
-            self.mlog.write(f" : Save state [{state_name}]\n\n".encode(encoding="utf-8"))
+            self.mlog.write(
+                f" : Save state [{state_name}]\n\n".encode(encoding="utf-8")
+            )
             self.need_save = False
         self.mlog.flush()
 
@@ -414,7 +430,9 @@ class RWKVEmbryo:
             self.state.processed_tokens_counts[token] /= self.penalty_mitigate
 
     @log_call
-    async def process_token_penalty(self, logits: torch.Tensor) -> torch.Tensor:
+    async def process_token_penalty(
+        self, logits: torch.Tensor, len_gen: int = 0
+    ) -> torch.Tensor:
         logits[END_OF_TEXT_TOKEN] = -1e9
         for token in self.state.processed_tokens_counts:
             logits[token] -= (
@@ -425,6 +443,8 @@ class RWKVEmbryo:
                 + self.repeat_penalty ** self.state.processed_tokens_counts[token]
                 - 1
             )
+
+            logits[NEW_LINE_OF_TEXT_TOKEN] += NEW_LINE_LORA ** len_gen - 1
         return logits
 
     @log_call
@@ -444,7 +464,9 @@ class RWKVEmbryo:
         return self.state.logits, self.state.state
 
     @log_call
-    async def process_tokens(self, tokens: List[int]) -> Tuple[torch.Tensor, torch.Tensor]:
+    async def process_tokens(
+        self, tokens: List[int]
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         self.logits, self.state = model.eval_sequence(
             tokens, self.state, self.state, self.logits, use_numpy=True)
@@ -454,17 +476,23 @@ class RWKVEmbryo:
 
         if len(tokens) == 0:
             return self.state.logits, self.state.state
-        
+
         if self.is_busy():
             self.interrupt()
 
         slice_len = 8
         while slice_len * 2 <= len(tokens) and slice_len < MAX_CHUNK:
             slice_len *= 2
-         
+
         async with self.state_lock:
             with torch.no_grad():
-                self.state.logits, self.state.state = await model.forward_parallel_slices_async(torch.tensor([tokens]).long().to(RWKV_DEVICE), self.state.state, slice_len=slice_len)
+                self.state.logits, self.state.state = (
+                    await model.forward_parallel_slices_async(
+                        torch.tensor([tokens]).long().to(RWKV_DEVICE),
+                        self.state.state,
+                        slice_len=slice_len,
+                    )
+                )
                 self.state.logits = self.state.logits[0, -1, :]
         for token in tokens:
             await self.process_processed_tokens_counts(token)
@@ -491,16 +519,18 @@ class RWKVEmbryo:
                 desc="Processing future",
                 leave=False,
                 unit=" tok",
-            ):  
+            ):
                 await asyncio.sleep(0)
                 if i < len_head:
                     token = head[i]
                     logits, _ = await self.process_token(token)
                 else:
                     logits = await self.process_token_penalty(logits)
-                    token: int = sampler.sample_logits(
-                        logits, self.temperature, self.top_p
-                    ).cpu().item()
+                    token: int = (
+                        sampler.sample_logits(logits, self.temperature, self.top_p)
+                        .cpu()
+                        .item()
+                    )
                     logits, _ = await self.process_token(token)
                     answer += tokenizer.decodeBytes([token])
                     if end in answer:
@@ -515,6 +545,7 @@ class RWKVEmbryo:
 
     async def get_history(self):
         return tokenizer_decode(self.state.processed_tokens)
+
 
 # ======================================== Chater Embryo ==========================================
 
@@ -613,8 +644,8 @@ class RWKVChater(RWKVChaterEmbryo):
         if message != "" and message[0] != "+":
             prompt = f"{chatuser}{self.prompt.separator} {message}\n\n"
             await self.process_tokens(tokenizer_encode(prompt))
-            
-        if len(message) >2 and message[:2] == "++":
+
+        if len(message) > 2 and message[:2] == "++":
             await self.process_tokens(tokenizer_encode(message[2:]))
             head = []
 
@@ -661,7 +692,7 @@ class RWKVGroupChater(RWKVChaterEmbryo):
         if "+reset" in message:
             await self.reset_state()
             return
-        
+
         if "+" == message[0]:
             self.message_cache.clear()
             return
@@ -681,7 +712,7 @@ class RWKVGroupChater(RWKVChaterEmbryo):
         if self.have_interrupt:
             self.clean_interrupt()
             raise RWKVInterruptException
-        
+
         head = tokenizer_encode(f"{self.prompt.bot}{self.prompt.separator}")
 
         answer, original = await self.gen_future(head=head, end_of="\n\n")
