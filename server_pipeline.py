@@ -444,7 +444,7 @@ class RWKVEmbryo:
                 - 1
             )
 
-            logits[NEW_LINE_OF_TEXT_TOKEN] += NEW_LINE_LORA ** len_gen - 1
+            logits[NEW_LINE_OF_TEXT_TOKEN] *= NEW_LINE_LORA ** len_gen
         return logits
 
     @log_call
