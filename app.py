@@ -34,6 +34,7 @@ nicknameGener = RWKVNicknameGener()
 
 app = Quart(__name__)
 
+app.json.ensure_ascii = False
 
 def restart():
     # app.shutdown()
