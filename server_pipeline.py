@@ -641,13 +641,13 @@ class RWKVChater(RWKVChaterEmbryo):
         )  # .strip() # 昵称和提示词不一定一致
 
         if self.prompt.multiuser:
-            chatuser = self.prompt.user if (chatuser is None) or (chatuser == "") or (chatuser == self.prompt.bot) else chatuser
+            user = self.prompt.user if (chatuser is None) or (chatuser == "") or (chatuser == self.prompt.bot) else chatuser
         else:
-            message = message.replace(chatuser, self.prompt.user) if (chatuser is None) or (chatuser == "") or (chatuser == self.prompt.bot) else message
+            message = message.replace(chatuser, self.prompt.user) if (chatuser is None) or (chatuser == "") else message
 
         head = tokenizer_encode(f"{self.prompt.bot}{self.prompt.separator}")
         if message != "" and message[0] != "+":
-            prompt = f"{chatuser}{self.prompt.separator} {message}\n\n"
+            prompt = f"{user}{self.prompt.separator} {message}\n\n"
             await self.process_tokens(tokenizer_encode(prompt))
 
         if len(message) > 2 and message[:2] == "++":
@@ -662,7 +662,7 @@ class RWKVChater(RWKVChaterEmbryo):
         await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE)
         # await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE)
 
-        answer = answer.replace(self.prompt.user, chatuser)
+        answer = answer.replace(user, chatuser)
         answer = answer.replace(self.prompt.bot, nickname).strip()
 
         return answer, original, await self.is_want_to_say(head)
