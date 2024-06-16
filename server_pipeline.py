@@ -561,8 +561,8 @@ class RWKVChaterEmbryo(RWKVEmbryo):
     async def gen_prompt(
         self,
         message_list: List[List[object]],
-        time_limit: float = 1800,
-        ctx_limit: int = 1024,
+        time_limit: float = 28800,
+        ctx_limit: int = 8192,
     ) -> List[int]:
         """
         [
@@ -728,8 +728,8 @@ class RWKVGroupChater(RWKVChaterEmbryo):
             return " : Done", " : Done", True
 
         self.message_cache.append([chatuser, message, time.time()])
-        if len(self.message_cache) > 128:
-            self.message_cache = self.message_cache[64]
+        if len(self.message_cache) > 256:
+            self.message_cache = self.message_cache[200]
 
     async def get_answer(
         self,
