@@ -641,9 +641,9 @@ class RWKVChater(RWKVChaterEmbryo):
         )  # .strip() # 昵称和提示词不一定一致
 
         if self.prompt.multiuser:
-            chatuser = self.prompt.user if chatuser is None or chatuser == "" else chatuser
+            chatuser = self.prompt.user if (chatuser is None) or (chatuser == "") or (chatuser == self.prompt.bot) else chatuser
         else:
-            message = message.replace(chatuser, self.prompt.user) if chatuser is None or chatuser == "" else message
+            message = message.replace(chatuser, self.prompt.user) if (chatuser is None) or (chatuser == "") or (chatuser == self.prompt.bot) else message
 
         head = tokenizer_encode(f"{self.prompt.bot}{self.prompt.separator}")
         if message != "" and message[0] != "+":
@@ -692,7 +692,7 @@ class RWKVGroupChater(RWKVChaterEmbryo):
     async def send_message(self, message: str, chatuser: str = None) -> None:
         self.plog.write(f"{chatuser}: {message}\n\n")
 
-        chatuser = self.prompt.user if chatuser is None or chatuser == "" else chatuser
+        chatuser = self.prompt.user if (chatuser is None) or (chatuser == "") or (chatuser == self.prompt.bot) else chatuser
         if "-temp=" in message:
             temperature = float(message.split("-temp=")[1].split(" ")[0])
             message = message.replace("-temp=" + f"{temperature:g}", "")
