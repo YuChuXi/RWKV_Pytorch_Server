@@ -2,5 +2,5 @@
 
 for i in $(ls -F data | grep /);
 do
-    rm -- "data/${i}state.npy" "data/${i}tokens.pkl";
+    rm -- "data/${i}state.pth" "data/${i}tokens.pkl";
 done
