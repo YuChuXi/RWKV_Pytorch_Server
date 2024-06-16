@@ -35,10 +35,10 @@ MAX_CHUNK = 1024
 SEED = None
 
 MODEL_NAME: str = "weight/RWKV-x060-World-7B-v2.1-20240507-ctx4096"
-# MODEL_NAME = "/home/yuchuxi/RWKV-LM-ROCm/RWKV-v5/out/L24-D2048-x060/rwkv-0"
 MODEL_NAME = "weight/RWKV-6-v2-ctx4096.roleplay"
 MODEL_NAME = "weight/RWKV-x060-World-1B6-v2.1-20240328-ctx4096"
 MODEL_NAME = "weight/RWKV-x060-World-3B-v2.1-Claude-nsfw"
+MODEL_NAME = "weight/RWKV-x060-World-7B-v2.1-20240507-ctx4096"
 
 
 MODEL_STATE_NAME: str = "default.state"
