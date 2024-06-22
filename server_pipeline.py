@@ -173,20 +173,26 @@ class RWKVState:
         self.logits = self.logits * (1 - weight) + state.logits * weight
 
         return self
-
     async def mix_max(self, state, weight: float):
         staot0 = await self.copy()
+        mean = staot0.state.mean()
+        staot0.state = torch.maximum(staot0.state * (1 + weight), state.state)
+        staot0.state = staot0.state / staot0.state.mean() * mean
 
-        staot0.state = torch.maximum(staot0.state, state.state)
-        staot0.logits = torch.maximum(staot0.logits, state.logits)
-
+        mean = staot0.logits.mean()
+        staot0.logits = torch.maximum(staot0.logits * (1 + weight), state.logits)
+        staot0.state = staot0.logits / staot0.logits.mean() * mean
         return staot0
 
     @run_in_async_thread
     def mix_max_inplace(self, state, weight: float):
-        self.state = torch.maximum(self.state, state.state)
-        self.logits = torch.maximum(self.logits, state.logits)
+        mean = self.state.mean()
+        self.state = torch.maximum(self.state * (1 + weight), state.state)
+        self.state = self.state / self.state.mean() * mean
 
+        mean = self.logits.mean()
+        self.logits = torch.maximum(self.logits * (1 + weight), state.logits)
+        self.state = self.logits / self.logits.mean() * mean
         return self
 
     def size(self):
@@ -659,7 +665,8 @@ class RWKVChater(RWKVChaterEmbryo):
             raise RWKVInterruptException
 
         answer, original = await self.gen_future(head=head, end_of="\n\n")
-        await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE)
+        await self.state.mix_max_inplace(state_cache[self.default_state], OBSTINATE)
+        # await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE)
         # await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE)
 
         answer = answer.replace(user, chatuser)
@@ -748,8 +755,9 @@ class RWKVGroupChater(RWKVChaterEmbryo):
         head = tokenizer_encode(f"{self.prompt.bot}{self.prompt.separator}")
 
         answer, original = await self.gen_future(head=head, end_of="\n\n")
-        await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE)
-
+        # await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE)
+        await self.state.mix_max_inplace(state_cache[self.default_state], OBSTINATE)
+        
         answer = answer.replace(self.prompt.bot, nickname).strip()
 
         self.plog.write(f"{answer}\n\n")
