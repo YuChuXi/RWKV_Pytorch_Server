@@ -173,6 +173,7 @@ class RWKVState:
         self.logits = self.logits * (1 - weight) + state.logits * weight
 
         return self
+    
     async def mix_max(self, state, weight: float):
         staot0 = await self.copy()
         mean = staot0.state.mean()
@@ -665,8 +666,8 @@ class RWKVChater(RWKVChaterEmbryo):
             raise RWKVInterruptException
 
         answer, original = await self.gen_future(head=head, end_of="\n\n")
-        await self.state.mix_max_inplace(state_cache[self.default_state], OBSTINATE)
-        # await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE)
+        #await self.state.mix_max_inplace(state_cache[self.default_state], OBSTINATE)
+        await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE)
         # await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE)
 
         answer = answer.replace(user, chatuser)
@@ -755,8 +756,8 @@ class RWKVGroupChater(RWKVChaterEmbryo):
         head = tokenizer_encode(f"{self.prompt.bot}{self.prompt.separator}")
 
         answer, original = await self.gen_future(head=head, end_of="\n\n")
-        # await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE)
-        await self.state.mix_max_inplace(state_cache[self.default_state], OBSTINATE)
+        await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE)
+        # await self.state.mix_max_inplace(state_cache[self.default_state], OBSTINATE)
         
         answer = answer.replace(self.prompt.bot, nickname).strip()
 
