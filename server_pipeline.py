@@ -608,13 +608,13 @@ class RWKVChaterEmbryo(RWKVEmbryo):
 
         return prompt
 
-    async def is_want_to_say(self, head: List[int]) -> bool:
+    async def is_want_to_say(self, head: List[int]) -> float:
         if len(head) == 0:
             return True
         probs = sampler.probs_logits(
             self.state.logits.clone(), self.temperature, self.top_p
         ).cpu()
-        return probs[head[0]].item() >= self.top_p
+        return max(probs[head[0]].item() - self.top_p, 0)
 
 
 # ============================================ Chater =============================================
@@ -632,7 +632,7 @@ class RWKVChater(RWKVChaterEmbryo):
         chatuser: str = None,
         nickname: str = None,
         debug: bool = False,
-    ) -> Tuple[str, str, bool]:
+    ) -> Tuple[str, str, float]:
         self.debug = debug
 
         if "-temp=" in message:
@@ -749,7 +749,7 @@ class RWKVGroupChater(RWKVChaterEmbryo):
     async def get_answer(
         self,
         nickname: str = None,
-    ) -> Tuple[str, str, bool]:
+    ) -> Tuple[str, str, float]:
         self.plog.write(f"{nickname}: ")
 
         nickname = self.prompt.bot if nickname is None or nickname == "" else nickname

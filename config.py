@@ -12,15 +12,15 @@ RWKV_DEVICE = "cuda"
 # Sampling temperature. It could be a good idea to increase temperature when top_p is low.
 TEMPERATURE: float = 2.0
 # For better Q&A accuracy and less diversity, reduce top_p (to 0.5, 0.2, 0.1 etc.)
-TOP_P: float = 0.3
+TOP_P: float = 0.5
 # Penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.
-PRESENCE_PENALTY: float = 1.0
+PRESENCE_PENALTY: float = 0.2
 # Penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.
-FREQUENCY_PENALTY: float = 2.0
+FREQUENCY_PENALTY: float = 0.8
 # When the model repeats several words, the penalty will increase sharply and pull the model back, set it to 1.0-1.2 is a good idea.
 PRPEAT_PENALTY: float = 1.05
 # Mitigating penalties after a certain length of context
-PENALTY_MITIGATE: float = 1.02
+PENALTY_MITIGATE: float = 1 / 0.996
 # How engaged a model is with prompt, which could be used to mitigate Alzheimer's disease in small models
 OBSTINATE: float = 0 # 0.1
 
@@ -67,28 +67,5 @@ CHAT_PROMPT_TYPE = "Chat-Ella"
 CHAT_PROMPT_TYPE = "Chat-XiaoPu"
 CHAT_PROMPT_TYPE = "Chat-MuXue"
 
-# ======================================== Gener settings =========================================
-
-NICKGENER_PROMPT: str = """注: 
-以下是一张用户名与称呼的对照表，称呼是用户名中最具有特色的部分, 且尽可能短. 
-
-玉子是个废物喵
-玉子
-
-沐沐
-沐沐
-
-墨子不是猫
-墨子
-
-不想加班的朋朋
-朋朋
-
-只有鱼骨头吃的喵
-鱼骨头喵
-
-猫猫博士凌枫
-猫猫博士
 
 
-"""

@@ -110,13 +110,13 @@ async def chat(
 
     prxxx()
     prxxx(f" #    Chat   id: {id} | nickname: {nickname} | echo: {echo}")
-    prxxx(f" #    {echo}-[{original}][{'FY'[is_want_to_say]}]<-O-")
+    prxxx(f" #    {echo}-[{original}][{is_want_to_say + chaters[id].top_p}]<-O-")
     prxxx(f" #    {echo}-[{answer}]<-A-")
 
     # 如果接受到的内容为空，则给出相应的回复
     if answer.isspace() or len(answer) == 0:
         answer = "喵喵喵？"
-    return answer, is_want_to_say
+    return answer, is_want_to_say > 0
 
 
 async def group_chat_send(
@@ -163,13 +163,13 @@ async def group_chat_get(
 
     prxxx()
     prxxx(f" #    Get gchat   id: {id} | nickname: {nickname} | echo: {echo}")
-    prxxx(f" #    {echo}-[{original}][{'FY'[is_want_to_say]}]<-O-")
+    prxxx(f" #    {echo}-[{original}][{is_want_to_say + group_chaters[id].top_p}]<-O-")
     prxxx(f" #    {echo}-[{answer}]<-A-")
 
     # 如果接受到的内容为空，则给出相应的回复
     if answer.isspace() or len(answer) == 0:
         answer = "喵喵喵？"
-    return answer, is_want_to_say
+    return answer, is_want_to_say > 0
 
 
 async def gen_nickname(name: str, echo=None):
