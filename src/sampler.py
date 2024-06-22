@@ -41,7 +41,7 @@ def probs_logits(out: torch.Tensor, temperature: float = 1.0, top_p: float = 0.8
     log_probabilities = log_probabilities.masked_fill(mask_remove, -1e10)
 
     # Generate a single sample
-    sampled_probs = torch.exp(log_probabilities).squeeze(-1)
+    sampled_probs = torch.exp(log_probabilities)
 
     return sampled_probs
 
