@@ -140,16 +140,13 @@ class RWKV_x060(nn.Module):
         assert args['dim_att'] % 32 == 0
         assert args['dim_ffn'] % 32 == 0
 
-        self.emb = nn.Embedding(args['vocab_size'], args['n_embd'])
         self.blocks = nn.ModuleList([Block(args, i) for i in range(args['n_layer'])])
         self.ln_out = nn.LayerNorm(args['n_embd'])
         self.head = nn.Linear(args['n_embd'], args['vocab_size'], bias=False)
 
         self.init_params() # !!! When you train RWKV from scratch, try my initialization for best performance !!!
 
-    def forward(self, idx):
-
-        x = self.emb(idx)
+    def forward(self, x):
 
         for block in self.blocks:
             x = block(x)
@@ -180,19 +177,6 @@ class RWKV_x060(nn.Module):
                 else:
                     m[n] = p
                 print()
-            elif n == "emb.weight":
-                m[n] = p
-                scale = -1e-4
-                nn.init.uniform_(m[n], a=scale, b=-scale) # !!! If you are using positional embedding, maybe it's better to remove block.0.ln0, and use default initialization for emb.weight instead of my uniform_(a=-1e-4, b=1e-4) !!!
-                print(f" [scale {scale}]")
-            elif n == "head.weight":
-                m[n] = p
-                if self.args['vocab_size'] > self.args['n_embd']:
-                    scale = 0.5 * math.sqrt(self.args['vocab_size'] / self.args['n_embd'])
-                else:
-                    scale = 0.5
-                nn.init.orthogonal_(m[n], gain=scale)
-                print(f" [scale {scale}]")
             else:
                 assert n.endswith('.weight') # should always be true
 

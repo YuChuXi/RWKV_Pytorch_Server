@@ -397,7 +397,6 @@ class RWKV_RNN(nn.Module):
         # 检查参数是否都存在
         assert 'n_embd' in self.args
         assert 'n_layer' in self.args
-        assert 'vocab_size' in self.args
         if 'head_size_a' not in self.args:
             self.args['head_size_a'] = 64
         if 'head_size_divisor' not in self.args:
@@ -439,9 +438,6 @@ class RWKV_RNN(nn.Module):
         self.state_size = [self.num_layer * (2 + self.head_size), self.n_embd]
 
         print(f"state_size:{self.state_size}") # 这里打印状态的形状
-        
-        # 初始化模型参数
-        self.emb = nn.Embedding.from_pretrained(w['emb.weight'], freeze=True)
 
         if self.onnx_opset >= 17:
             self.ln0 = nn.LayerNorm(self.n_embd)
@@ -465,9 +461,6 @@ class RWKV_RNN(nn.Module):
         else:
             self.ln_out_weight = nn.Parameter(w['ln_out.weight'])
             self.ln_out_bias = nn.Parameter(w['ln_out.bias'])
-        
-        self.head = nn.Linear(self.n_embd, self.args['vocab_size'], bias=False)
-        self.head.weight = nn.Parameter(w['head.weight'])
 
     def manual_layer_norm(self, x: torch.Tensor, weight: torch.Tensor, bias: torch.Tensor, eps: float = 1e-5) -> torch.Tensor:
         """
@@ -496,7 +489,6 @@ class RWKV_RNN(nn.Module):
         Returns:
             torch.Tensor: 模型输出。
         """
-        x = self.emb(token)
         if self.onnx_opset >= 17:
             x = self.ln0(x)
         else:
@@ -509,7 +501,6 @@ class RWKV_RNN(nn.Module):
             x = self.ln_out(x)
         else:
             x = self.manual_layer_norm(x, self.ln_out_weight, self.ln_out_bias, 1e-5) 
-        x = self.head(x)
         return x, state
 
     def forward_parallel(self, token: torch.Tensor, state: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -521,7 +512,6 @@ class RWKV_RNN(nn.Module):
         Returns:
             torch.Tensor: 模型输出。
         """
-        x = self.emb(token)
         if self.onnx_opset >= 17:
             x = self.ln0(x)
         else:
@@ -533,7 +523,6 @@ class RWKV_RNN(nn.Module):
             x = self.ln_out(x)
         else:
             x = self.manual_layer_norm(x, self.ln_out_weight, self.ln_out_bias, 1e-5) 
-        x = self.head(x)
         return x, state
     
     def forward_parallel_slices(self, token: torch.Tensor, state: torch.Tensor, slice_len: int = 64) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -622,9 +611,6 @@ class RWKV_RNN(nn.Module):
         """
         # 创建一个空字典来存储模型权重
         state_dict = {}
-
-        # 保存词嵌入层的权重
-        state_dict['emb.weight'] = self.emb.weight.data
 
         # 保存 RWKV_RNN 的权重
         for name, param in self.named_parameters():
