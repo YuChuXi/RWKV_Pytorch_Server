@@ -16,7 +16,6 @@ from hypercorn.asyncio import serve
 import asyncio
 from server_pipeline import (
     RWKVChater,
-    RWKVNicknameGener,
     RWKVGroupChater,
     RWKVInterruptException,
     process_default_state,
@@ -30,7 +29,6 @@ with open("help.min.html", "r") as f:
 random.seed(time.time())
 chaters: Dict[str, RWKVChater] = {}
 group_chaters: Dict[str, RWKVGroupChater] = {}
-nicknameGener = RWKVNicknameGener()
 
 app = Quart(__name__)
 
@@ -172,23 +170,6 @@ async def group_chat_get(
     return answer, is_want_to_say > 0
 
 
-async def gen_nickname(name: str, echo=None):
-    echo = gen_echo()
-    prxxx()
-    prxxx(f" #    GenNickname   echo: {echo}")
-    prxxx(f" #    -N->[{name}]-{echo}")
-    nickname, _ = await nicknameGener.gen_nickname(name)
-
-    prxxx()
-    prxxx(f" #    GenNickname   echo: {echo}")
-    prxxx(f" #  {echo}-[{nickname}]<-N-")
-
-    # 如果接受到的内容为空，则给出相应的回复
-    if nickname.isspace() or len(nickname) == 0 or nickname == "None":
-        nickname = name
-    return nickname
-
-
 async def reset_state(id: str, echo=None):
     id = clean_symbols(id)
     flag = False
@@ -240,16 +221,6 @@ async def R_group_chat_get():
         kwargs = await request.form
     answer, is_want_to_say = await group_chat_get(**kwargs)
     return {"message": answer, "is_want_to_say": is_want_to_say, "state": "ok"}
-
-
-@app.route("/nickname", methods=["POST", "GET"])
-async def R_nickname():
-    if request.method == "GET":
-        kwargs = request.args
-    elif request.method == "POST":
-        kwargs = await request.form
-    nickname = await gen_nickname(**kwargs)
-    return {"nickname": nickname, "state": "ok"}
 
 
 @app.route("/reset_state", methods=["GET"])
@@ -376,7 +347,6 @@ async def W_group_chat():
 async def before_serving():
     # app.add_background_task(time_to_save)
     await process_default_state()
-    await nicknameGener.init_state()
     init = RWKVChater("init")
     chaters["init"] = init
     await init.init_state()

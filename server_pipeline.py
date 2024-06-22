@@ -50,7 +50,6 @@ from config import (
     TONKEIZER_DICT,
     CHAT_LANGUAGE,
     CHAT_PROMPT_TYPE,
-    NICKGENER_PROMPT,
 )
 
 if RWKV_DEVICE == "musa":
@@ -770,35 +769,6 @@ class RWKVGroupChater(RWKVChaterEmbryo):
 
         self.plog.write(f"{answer}\n\n")
         return answer, original, await self.is_want_to_say(head)
-
-
-# ======================================= Nickname Gener ==========================================
-
-
-class RWKVNicknameGener(RWKVEmbryo):
-    def __init__(self):
-        super().__init__(
-            "-G_RWKVNickNameGener_G",
-            "-S_RWKVNickNameGener_S",
-            RWKVPrompt(NICKGENER_PROMPT),
-        )
-        self.temperature: float = 0.3
-        self.top_p: float = 0.1
-        self.penalty_mitigate = 0.98
-        self.presence_penalty = -1
-        self.repeat_penalty = 1
-        self.frequency_penalty = 0
-
-    async def gen_nickname(self, name):
-        self.state.processed_tokens = []
-        self.state.processed_tokens_counts = {}
-        new = f"{name}\n"
-        await self.process_tokens(tokenizer_encode(new))
-        answer, original = await self.gen_future(max_len=10, end_of="\n\n")
-
-        await self.reset_state(q=True)
-        return answer, original
-
 
 # ========================================== Other ================================================
 
