@@ -520,7 +520,7 @@ class RWKVEmbryo:
         logits = self.state.logits
         answer: bytes = b""
         end: bytes = end_of.encode(encoding="utf-8")
-
+        
         async with self.state_lock:
             for i in tqdm.trange(
                 max(max_len, len_head),
