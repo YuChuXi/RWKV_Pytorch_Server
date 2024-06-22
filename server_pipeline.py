@@ -181,7 +181,7 @@ class RWKVState:
 
         mean = staot0.logits.mean()
         staot0.logits = torch.maximum(staot0.logits * (1 + weight), state.logits)
-        staot0.state = staot0.logits / staot0.logits.mean() * mean
+        staot0.logits = staot0.logits / staot0.logits.mean() * mean
         return staot0
 
     @run_in_async_thread
@@ -192,7 +192,7 @@ class RWKVState:
 
         mean = self.logits.mean()
         self.logits = torch.maximum(self.logits * (1 + weight), state.logits)
-        self.state = self.logits / self.logits.mean() * mean
+        self.logits = self.logits / self.logits.mean() * mean
         return self
 
     def size(self):
