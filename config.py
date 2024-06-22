@@ -48,7 +48,6 @@ MODEL_STATE_NAME: str = "default.state"
 TONKEIZER_DICT: str = "asset/rwkv_vocab_v20230424.txt"
 
 
-
 # ========================================= App settings ==========================================
 
 APP_BIND: List[str] = ["0.0.0.0:48088", "[::]:48089"]
