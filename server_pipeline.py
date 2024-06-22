@@ -614,7 +614,7 @@ class RWKVChaterEmbryo(RWKVEmbryo):
         probs = sampler.probs_logits(
             self.state.logits.clone(), self.temperature, self.top_p
         ).cpu()
-        return probs[head[0]].item() >= self.top_p * 0.5
+        return probs[head[0]].item() >= self.top_p
 
 
 # ============================================ Chater =============================================
