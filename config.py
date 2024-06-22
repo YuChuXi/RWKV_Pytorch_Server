@@ -22,7 +22,7 @@ PRPEAT_PENALTY: float = 1.05
 # Mitigating penalties after a certain length of context
 PENALTY_MITIGATE: float = 1.02
 # How engaged a model is with prompt, which could be used to mitigate Alzheimer's disease in small models
-OBSTINATE: float = 0.1
+OBSTINATE: float = 0 # 0.1
 
 MAX_GENERATION_LENGTH: int = 384
 END_OF_TEXT_TOKEN: int = 0
