@@ -176,22 +176,22 @@ class RWKVState:
     async def mix_max(self, state, weight: float):
         staot0 = await self.copy()
         mean = staot0.state.mean()
-        staot0.state = torch.maximum(staot0.state * (1 + weight), state.state)
+        staot0.state = torch.maximum(staot0.state, state.state / state.state.mean() * weight)
         staot0.state = staot0.state / staot0.state.mean() * mean
 
         mean = staot0.logits.mean()
-        staot0.logits = torch.maximum(staot0.logits * (1 + weight), state.logits)
+        staot0.logits = torch.maximum(staot0.logits, state.logits / state.logits.mean() * weight)
         staot0.logits = staot0.logits / staot0.logits.mean() * mean
         return staot0
 
     @run_in_async_thread
     def mix_max_inplace(self, state, weight: float):
         mean = self.state.mean()
-        self.state = torch.maximum(self.state * (1 + weight), state.state)
+        self.state = torch.maximum(self.state, state.state / state.state.mean() * weight)
         self.state = self.state / self.state.mean() * mean
 
         mean = self.logits.mean()
-        self.logits = torch.maximum(self.logits * (1 + weight), state.logits)
+        self.logits = torch.maximum(self.logits, state.logits / state.logits.mean() * weight)
         self.logits = self.logits / self.logits.mean() * mean
         return self
 
