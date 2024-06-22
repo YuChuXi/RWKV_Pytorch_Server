@@ -656,7 +656,7 @@ class RWKVChater(RWKVChaterEmbryo):
             prompt = f"{user}{self.prompt.separator} {message}\n\n"
             await self.process_tokens(tokenizer_encode(prompt))
 
-        if len(message) > 2 and message[:2] == "++":
+        if len(message) >= 2 and message[:2] == "++":
             await self.process_tokens(tokenizer_encode(message[2:]))
             head = []
 
