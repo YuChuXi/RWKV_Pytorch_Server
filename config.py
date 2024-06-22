@@ -65,6 +65,7 @@ CHAT_LANGUAGE: str = "Chinese"
 CHAT_PROMPT_TYPE: str = "Chat-MoZi-N"
 CHAT_PROMPT_TYPE = "Chat-Ella"
 CHAT_PROMPT_TYPE = "Chat-XiaoPu"
+CHAT_PROMPT_TYPE = "Chat-MuXue"
 
 # ======================================== Gener settings =========================================
 
