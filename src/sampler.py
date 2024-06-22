@@ -4,7 +4,7 @@ import numpy as np
 from collections import defaultdict
 from typing import Optional, Tuple
 
-def sample_probs(out: torch.Tensor, temperature: float = 1.0, top_p: float = 0.8) -> torch.Tensor:
+def probs_logits(out: torch.Tensor, temperature: float = 1.0, top_p: float = 0.8) -> torch.Tensor:
     """
     Sample from the logits tensor produced by the model.
 
@@ -47,7 +47,7 @@ def sample_probs(out: torch.Tensor, temperature: float = 1.0, top_p: float = 0.8
 
 
 def sample_logits(out: torch.Tensor, temperature: float = 1.0, top_p: float = 0.8) -> torch.Tensor:
-    return torch.multinomial(sample_probs(out, temperature, top_p), num_samples=1).squeeze(-1)
+    return torch.multinomial(probs_logits(out, temperature, top_p), num_samples=1).squeeze(-1)
 
 
 def apply_penalties(logits: torch.Tensor, temperature: float, top_p: float, presence_penalty: float, frequency_penalty: float, token: Optional[torch.Tensor] = None, freq_dict: Optional[defaultdict] = None) -> Tuple[torch.Tensor, torch.Tensor, defaultdict]:
