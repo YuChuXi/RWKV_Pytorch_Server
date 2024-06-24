@@ -350,7 +350,7 @@ async def before_serving():
     init = RWKVChater("init")
     chaters["init"] = init
     await init.init_state()
-    prxxx(f"State size: {init.state.size()}")
+    prxxx(f"State size: {init.state.state.size()}")
     await init.reset_state()
     await chat(
         **{
