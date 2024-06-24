@@ -41,13 +41,13 @@ def probs_logits(out: torch.Tensor, temperature: float = 1.0, top_p: float = 0.8
     log_probabilities = log_probabilities.masked_fill(mask_remove, -1e10)
 
     # Generate a single sample
-    sampled_probs = torch.exp(log_probabilities)
+    sampled_probs = torch.exp(log_probabilities).squeeze(-1)
 
     return sampled_probs
 
 
 def sample_logits(out: torch.Tensor, temperature: float = 1.0, top_p: float = 0.8) -> torch.Tensor:
-    return torch.multinomial(probs_logits(out, temperature, top_p), num_samples=1).squeeze(-1)
+    return torch.multinomial(probs_logits(out, temperature, top_p), num_samples=1)
 
 
 def apply_penalties(logits: torch.Tensor, temperature: float, top_p: float, presence_penalty: float, frequency_penalty: float, token: Optional[torch.Tensor] = None, freq_dict: Optional[defaultdict] = None) -> Tuple[torch.Tensor, torch.Tensor, defaultdict]:
