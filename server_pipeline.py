@@ -203,7 +203,7 @@ class RWKVState:
         return self
 
     def size(self):
-        return self.__sizeof__()
+        return self.state.size()
 
 
 state_cache: Dict[str, RWKVState] = {}
