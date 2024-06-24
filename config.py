@@ -28,7 +28,7 @@ MAX_GENERATION_LENGTH: int = 384
 END_OF_TEXT_TOKEN: int = 0
 NEW_LINE_OF_TEXT_TOKEN: int = 261
 # The bigger you are, the less you talk. 1.000 - 1.005
-NEW_LINE_LORA: float = 1.000
+NEW_LINE_LORA: float = 1.002
 
 THREADS: int = 3
 MAX_CHUNK: int = 1024
