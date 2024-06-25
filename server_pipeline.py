@@ -642,7 +642,7 @@ class RWKVChater(RWKVChaterEmbryo):
         if "-top_p=" in message:
             top_p = float(message.split("-top_p=")[1].split(" ")[0])
             message = message.replace("-top_p=" + f"{top_p:g}", "")
-            self.top_p = max(0.2, min(top_p, 5.0))
+            self.top_p = max(0.0, min(top_p, 1.0))
 
         if "+reset" in message:
             await self.reset_state()
@@ -715,7 +715,7 @@ class RWKVGroupChater(RWKVChaterEmbryo):
         if "-top_p=" in message:
             top_p = float(message.split("-top_p=")[1].split(" ")[0])
             message = message.replace("-top_p=" + f"{top_p:g}", "")
-            self.top_p = max(0.2, min(top_p, 5.0))
+            self.top_p = max(0.0, min(top_p, 1.0))
 
         if "+reset" in message:
             await self.reset_state()
@@ -726,20 +726,6 @@ class RWKVGroupChater(RWKVChaterEmbryo):
             return
 
         assert self.prompt.multiuser , "Group Chat need multiuser prompt!"
-
-        if "-temp=" in message:
-            temperature = float(message.split("-temp=")[1].split(" ")[0])
-            message = message.replace("-temp=" + f"{temperature:g}", "")
-            self.temperature = max(0.2, min(temperature, 5.0))
-
-        if "-top_p=" in message:
-            top_p = float(message.split("-top_p=")[1].split(" ")[0])
-            message = message.replace("-top_p=" + f"{top_p:g}", "")
-            self.top_p = max(0.2, min(top_p, 5.0))
-
-        if "+reset" in message:
-            await self.reset_state()
-            return " : Done", " : Done", True
 
         self.message_cache.append([chatuser, message, time.time()])
         if len(self.message_cache) > 256:
