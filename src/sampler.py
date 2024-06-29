@@ -118,9 +118,9 @@ def sample_logits(
 
     probabilities = probs_logits(out, temperature, top_p)
     # Sample from the modified distribution
-    sampled_indices = torch.multinomial(probabilities, 1)
-
-    return sampled_indices.squeeze(-1)
+    sampled_indices = torch.multinomial(probabilities, 1).squeeze(-1)
+    
+    return sampled_indices
 
 
 def apply_penalties(logits: torch.Tensor, temperature: float, top_p: float, presence_penalty: float, frequency_penalty: float, token: Optional[torch.Tensor] = None, freq_dict: Optional[defaultdict] = None) -> Tuple[torch.Tensor, torch.Tensor, defaultdict]:
