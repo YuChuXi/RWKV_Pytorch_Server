@@ -510,7 +510,7 @@ class RWKVEmbryo:
                     )
                 )
                 self.state.logits = self.state.logits[0, -1, :]
-        self.process_processed_tokens_counts(tokens)
+        await self.process_processed_tokens_counts(tokens)
         self.need_save = True
         await self.check_state()
 
