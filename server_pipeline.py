@@ -434,15 +434,16 @@ class RWKVEmbryo:
         # self.frequency_penalty = s_var/36
 
     @log_call
-    async def process_processed_tokens_counts(self, token: int) -> None:
-        self.state.processed_tokens.append(token)
-        if token not in self.state.processed_tokens_counts:  # 词频统计
-            self.state.processed_tokens_counts[token] = 1
-        else:
-            self.state.processed_tokens_counts[token] += 1
+    async def process_processed_tokens_counts(self, tokens: List[int]) -> None:
+        for token in tokens:
+            self.state.processed_tokens.append(token)
+            if token not in self.state.processed_tokens_counts:  # 词频统计
+                self.state.processed_tokens_counts[token] = 1
+            else:
+                self.state.processed_tokens_counts[token] += 1
 
-        for token in self.state.processed_tokens_counts:
-            self.state.processed_tokens_counts[token] /= self.penalty_mitigate
+            for token in self.state.processed_tokens_counts:
+                self.state.processed_tokens_counts[token] /= self.penalty_mitigate
 
     @log_call
     async def process_token_penalty(
@@ -455,8 +456,8 @@ class RWKVEmbryo:
                 self.presence_penalty
                 + self.state.processed_tokens_counts[token] * self.frequency_penalty
                 # 新惩罚
-                + self.repeat_penalty ** self.state.processed_tokens_counts[token]
-                - 1
+                #+ self.repeat_penalty ** self.state.processed_tokens_counts[token]
+                #- 1
             )
 
             logits[NEW_LINE_OF_TEXT_TOKEN] *= NEW_LINE_LORA ** len_gen
@@ -471,7 +472,7 @@ class RWKVEmbryo:
                 torch.tensor([token]), self.state.state
             )
             self.state.logits = self.state.logits[-1, :]
-        await self.process_processed_tokens_counts(token)
+        await self.process_processed_tokens_counts([token])
         self.need_save = True
         await self.check_state()
 
@@ -509,8 +510,7 @@ class RWKVEmbryo:
                     )
                 )
                 self.state.logits = self.state.logits[0, -1, :]
-        for token in tokens:
-            await self.process_processed_tokens_counts(token)
+        self.process_processed_tokens_counts(tokens)
         self.need_save = True
         await self.check_state()
 
