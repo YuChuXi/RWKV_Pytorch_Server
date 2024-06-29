@@ -115,11 +115,10 @@ def sample_logits(
     Returns:
         torch.Tensor: Sampled indices, shape [*].
     """
-
+    out = out.reshape(-1, out.shape[-1])
     probabilities = probs_logits(out, temperature, top_p)
     # Sample from the modified distribution
     sampled_indices = torch.multinomial(probabilities, 1).squeeze(-1)
-    
     return sampled_indices
 
 
