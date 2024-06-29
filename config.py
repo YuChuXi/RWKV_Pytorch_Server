@@ -16,9 +16,9 @@ TOP_P: float = 0.2
 # Penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.
 PRESENCE_PENALTY: float = 0.5
 # Penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.
-FREQUENCY_PENALTY: float = 1.0
+FREQUENCY_PENALTY: float = 5.0
 # When the model repeats several words, the penalty will increase sharply and pull the model back, set it to 1.0-1.2 is a good idea.
-PRPEAT_PENALTY: float = 1.05
+PRPEAT_PENALTY: float = 1.00
 # Mitigating penalties after a certain length of context
 PENALTY_MITIGATE: float = 1 / 0.996
 # How engaged a model is with prompt, which could be used to mitigate Alzheimer's disease in small models
@@ -38,9 +38,10 @@ MODEL_NAME: str = "weight/RWKV-x060-World-7B-v2.1-20240507-ctx4096"
 MODEL_NAME = "weight/RWKV-6-v2-ctx4096.roleplay"
 MODEL_NAME = "weight/RWKV-x060-World-1B6-v2.1-20240328-ctx4096"
 MODEL_NAME = "weight/RWKV-x060-World-3B-v2.1-Claude-nsfw"
-MODEL_NAME = "weight/RWKV-x060-World-3B-v2.1-xuexue-v4"
-MODEL_NAME = "weight/RWKV-x060-World-7B-v2.1-20240507-ctx4096"
-MODEL_NAME = "weight/rwkv-x060-14b-world-v2.1-93%trained-20240602-ctx4k.pth"
+#MODEL_NAME = "weight/RWKV-x060-World-3B-v2.1-xuexue-v4"
+#MODEL_NAME = "weight/RWKV-x060-World-7B-v2.1-20240507-ctx4096"
+#MODEL_NAME = "weight/rwkv-x060-14b-world-v2.1-93%trained-20240602-ctx4k.pth"
+MODEL_NAME = "weight/RWKV-x060-World-3B-v2.1-20240417-ctx4096.pth"
 
 MODEL_STATE_NAME: str = "default.state"
 
