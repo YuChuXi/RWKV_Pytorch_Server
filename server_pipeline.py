@@ -349,7 +349,7 @@ class RWKVEmbryo:
                 await asyncio.sleep(0)
                 if name not in state_cache:
                     if state := await RWKVState().load(name):
-                        state_cache[name] = state
+                        state_cache[name] = state.copy()
                         prxxx(f"Cache state   name: {name}", q=q)
                 if loaded:
                     continue
