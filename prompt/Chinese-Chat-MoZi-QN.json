@@ -3,5 +3,6 @@
     "bot": "墨子",
     "separator": ":",
     "prompt": "prompt/mozi_v7qn.init",
-    "multiuser": true
+    "multiuser": true,
+    "format_name": "<|%s|>"
 }
