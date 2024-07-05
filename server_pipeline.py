@@ -228,6 +228,8 @@ class RWKVPrompt:
             self.separator = None
             self.ignore = None
             self.multiuser = False
+            self.split = "\n\n"
+            self.format = None
         else:
             prompt_config = f"prompt/{language}-{type}.json"
             if not file is None:
@@ -243,6 +245,8 @@ class RWKVPrompt:
                 self.prompt = prompt_data.get("prompt", "")
                 self.ignore = prompt_data.get("ignore", "")
                 self.multiuser = prompt_data.get("multiuser", False)
+                self.split = prompt_data.get("split", "\n\n")
+                self.format = prompt_data.get("format", None)
                 if check_file(self.prompt):
                     with open(self.prompt, "r", encoding="utf-8", errors="ignore") as f:
                         self.prompt = f.read()
@@ -262,6 +266,12 @@ class RWKVPrompt:
         if isinstance(self.ignore, str):
             self.ignore = re.compile(self.ignore)
         return self.ignore.sub("", string)
+    
+    def process_format(self, name, message = "", tail = None):
+        tail = self.split if tail is None else tail
+        if self.format is None:
+            return f"{name}{self.separator} {message}{tail}"
+        return self.format%(name, message) + tail
 
 
 DEFAULT_PROMPT = RWKVPrompt()
@@ -587,7 +597,7 @@ class RWKVChaterEmbryo(RWKVEmbryo):
             return []
         now_time = time.time()
         tokens_list = [
-            tokenizer_encode(f"{m[0]}{self.prompt.separator} {m[1]}\n\n")
+            tokenizer_encode(self.prompt.process_format(m[0], f"{m[1]}"))
             for m in message_list
             if now_time - m[2] <= time_limit
         ]
@@ -608,6 +618,7 @@ class RWKVChaterEmbryo(RWKVEmbryo):
         return prompt
 
     async def is_want_to_say(self, head: List[int]) -> float:
+        return 0
         if len(head) == 0:
             return 1.0
         probs = sampler.probs_logits(
@@ -658,9 +669,9 @@ class RWKVChater(RWKVChaterEmbryo):
         else:
             message = message.replace(chatuser, self.prompt.user) if (chatuser is None) or (chatuser == "") else message
 
-        head = tokenizer_encode(f"{self.prompt.bot}{self.prompt.separator}")
+        head = tokenizer_encode(self.prompt.process_format(self.prompt.bot, tail = ""))
         if message != "" and message[0] != "+":
-            prompt = f"{user}{self.prompt.separator} {message}\n\n"
+            prompt = self.prompt.process_format(user, f"{message}")
             await self.process_tokens(tokenizer_encode(prompt))
 
         if len(message) >= 2 and message[:2] == "++":
@@ -671,7 +682,7 @@ class RWKVChater(RWKVChaterEmbryo):
             self.clean_interrupt()
             raise RWKVInterruptException
 
-        answer, original = await self.gen_future(head=head, end_of="\n\n")
+        answer, original = await self.gen_future(head=head, end_of=self.prompt.split)
         #await self.state.mix_max_inplace(state_cache[self.default_state], OBSTINATE)
         await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE)
         # await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE)
@@ -745,9 +756,9 @@ class RWKVGroupChater(RWKVChaterEmbryo):
             self.clean_interrupt()
             raise RWKVInterruptException
 
-        head = tokenizer_encode(f"{self.prompt.bot}{self.prompt.separator}")
+        head = tokenizer_encode(self.prompt.format(self.prompt.bot))
 
-        answer, original = await self.gen_future(head=head, end_of="\n\n")
+        answer, original = await self.gen_future(head=head, end_of=self.prompt.split)
         await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE)
         # await self.state.mix_max_inplace(state_cache[self.default_state], OBSTINATE)
         

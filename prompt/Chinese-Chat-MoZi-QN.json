@@ -4,5 +4,6 @@
     "separator": ":",
     "prompt": "prompt/mozi_v7qn.init",
     "multiuser": true,
-    "format_name": "<|%s|>"
+    "split": "\n\n",
+    "format_name": "<|%s|>: %s"
 }
