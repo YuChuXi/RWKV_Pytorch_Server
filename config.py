@@ -12,11 +12,11 @@ RWKV_DEVICE = "cuda"
 # Sampling temperature. It could be a good idea to increase temperature when top_p is low.
 TEMPERATURE: float = 1.3
 # For better Q&A accuracy and less diversity, reduce top_p (to 0.5, 0.2, 0.1 etc.)
-TOP_P: float = 0.3
+TOP_P: float = 0.2
 # Penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.
 PRESENCE_PENALTY: float = 0.0
 # Penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.
-FREQUENCY_PENALTY: float = 0.5
+FREQUENCY_PENALTY: float = 1.0
 # When the model repeats several words, the penalty will increase sharply and pull the model back, set it to 1.0-1.2 is a good idea.
 PRPEAT_PENALTY: float = 1.00
 # Mitigating penalties after a certain length of context
@@ -28,7 +28,7 @@ MAX_GENERATION_LENGTH: int = 384
 END_OF_TEXT_TOKEN: int = 0
 NEW_LINE_OF_TEXT_TOKEN: int = 261
 # The bigger you are, the less you talk. 1.000 - 1.005
-NEW_LINE_LORA: float = 1.0003
+NEW_LINE_LORA: float = 1.00
 
 THREADS: int = 3
 MAX_CHUNK: int = 1024
@@ -39,9 +39,9 @@ MODEL_NAME = "weight/RWKV-6-v2-ctx4096.roleplay"
 MODEL_NAME = "weight/RWKV-x060-World-1B6-v2.1-20240328-ctx4096"
 MODEL_NAME = "weight/RWKV-x060-World-3B-v2.1-Claude-nsfw"
 #MODEL_NAME = "weight/RWKV-x060-World-3B-v2.1-xuexue-v4"
-#MODEL_NAME = "weight/RWKV-x060-World-7B-v2.1-20240507-ctx4096"
+MODEL_NAME = "weight/RWKV-x060-World-7B-v2.1-20240507-ctx4096"
 #MODEL_NAME = "weight/rwkv-x060-14b-world-v2.1-93%trained-20240602-ctx4k.pth"
-MODEL_NAME = "weight/RWKV-x060-World-3B-v2.1-20240417-ctx4096.pth"
+#MODEL_NAME = "weight/RWKV-x060-World-3B-v2.1-20240417-ctx4096.pth"
 
 MODEL_STATE_NAME: str = "default.state"
 
@@ -63,8 +63,8 @@ CHAT_LANGUAGE: str = "Chinese"
 # QA: Question and Answer prompt to talk to an AI assistant.
 # Chat: chat prompt (need a large model for adequate quality, 7B+).
 CHAT_PROMPT_TYPE: str = "Chat-MoZi-N"
-CHAT_PROMPT_TYPE = "Chat-Ella"
-CHAT_PROMPT_TYPE = "Chat-XiaoPu"
+# CHAT_PROMPT_TYPE = "Chat-Ella"
+# CHAT_PROMPT_TYPE = "Chat-XiaoPu"
 # CHAT_PROMPT_TYPE = "Chat-MuXue"
 
 
