@@ -756,7 +756,7 @@ class RWKVGroupChater(RWKVChaterEmbryo):
             self.clean_interrupt()
             raise RWKVInterruptException
 
-        head = tokenizer_encode(self.prompt.process_format(self.prompt.bot))
+        head = tokenizer_encode(self.prompt.process_format(self.prompt.bot, tail = ""))
 
         answer, original = await self.gen_future(head=head, end_of=self.prompt.split)
         await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE)
