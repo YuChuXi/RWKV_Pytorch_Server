@@ -609,7 +609,7 @@ class RWKVChaterEmbryo(RWKVEmbryo):
 
     async def is_want_to_say(self, head: List[int]) -> float:
         if len(head) == 0:
-            return True
+            return 1.0
         probs = sampler.probs_logits(
             self.state.logits.clone(), self.temperature, self.top_p
         ).cpu()
