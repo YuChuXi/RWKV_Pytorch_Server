@@ -1,9 +1,8 @@
 {
     "user": "木子",
     "bot": "墨子",
-    "separator": ":",
     "prompt": "prompt/mozi_v7qn.init",
     "multiuser": true,
     "split": "\n\n",
-    "format_name": "<|%s|>: %s"
+    "format": "<|%s|>: %s"
 }
