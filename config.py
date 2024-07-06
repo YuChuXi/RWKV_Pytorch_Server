@@ -22,7 +22,7 @@ PRPEAT_PENALTY: float = 1.00
 # Mitigating penalties after a certain length of context
 PENALTY_MITIGATE: float = 1 / 0.996
 # These tokens will not be punished FREQUENCY_PENALTY
-EXCEPTIONAL_TOKENS: List[int] = [261, ]
+EXCEPTIONAL_TOKENS: List[int] = [261, 61, 125]
 # How engaged a model is with prompt, which could be used to mitigate Alzheimer's disease in small models
 OBSTINATE: float = 0 # 0.1
 
