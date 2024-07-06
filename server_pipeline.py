@@ -740,7 +740,7 @@ class RWKVGroupChater(RWKVChaterEmbryo):
 
         self.message_cache.append([chatuser, message, time.time()])
         if len(self.message_cache) > 256:
-            self.message_cache = self.message_cache[200]
+            self.message_cache = self.message_cache[-200]
 
     async def get_answer(
         self,
