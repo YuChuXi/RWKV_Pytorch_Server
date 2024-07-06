@@ -621,7 +621,7 @@ class RWKVChaterEmbryo(RWKVEmbryo):
         return prompt
 
     async def is_want_to_say(self, head: List[int]) -> float:
-        return 0
+        # return 0
         if len(head) == 0:
             return 1.0
         probs = sampler.probs_logits(
