@@ -777,7 +777,7 @@ async def process_default_state():
         prxxx("Default state was processed")
     else:
         await RWKVChater(
-            id="chat-model", state_name=MODEL_STATE_NAME, prompt=RWKVPrompt()
+            id="chat-model", state_name=MODEL_STATE_NAME, prompt=DEFAULT_PROMPT
         ).init_state()
 
 
