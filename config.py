@@ -34,7 +34,7 @@ NEW_LINE_OF_TEXT_TOKEN: int = 261
 NEW_LINE_LORA: float = 1.00
 
 THREADS: int = 3
-MAX_CHUNK: int = 1024
+MAX_CHUNK: int = 256
 SEED: int = None
 
 MODEL_NAME: str = "weight/RWKV-x060-World-7B-v2.1-20240507-ctx4096"
