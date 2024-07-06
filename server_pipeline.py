@@ -462,9 +462,8 @@ class RWKVEmbryo:
     ) -> torch.Tensor:
         logits[END_OF_TEXT_TOKEN] = -1e9
         for token in self.state.processed_tokens_counts:
-            if token in EXCEPTIONAL_TOKENS:
-                continue
-            logits[token] -= (
+            exc = EXCEPTIONAL_TOKENS[token] if token in EXCEPTIONAL_TOKENS else 1.0
+            logits[token] -= exc * (
                 # 传统惩罚
                 self.presence_penalty
                 + self.state.processed_tokens_counts[token] * self.frequency_penalty

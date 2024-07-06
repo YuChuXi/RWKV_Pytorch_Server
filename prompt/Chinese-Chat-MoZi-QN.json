@@ -3,6 +3,6 @@
     "bot": "墨子",
     "prompt": "prompt/mozi_v7qn.init",
     "multiuser": true,
-    "split": "\n\n<|",
-    "format": "%s|>: %s"
+    "split": "\n\n",
+    "format": "%s: %s"
 }
