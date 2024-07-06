@@ -36,6 +36,7 @@ from config import (
     PRESENCE_PENALTY,
     FREQUENCY_PENALTY,
     PRPEAT_PENALTY,
+    EXCEPTIONAL_TOKENS,
     OBSTINATE,
     PENALTY_MITIGATE,
     MAX_GENERATION_LENGTH,
@@ -461,6 +462,8 @@ class RWKVEmbryo:
     ) -> torch.Tensor:
         logits[END_OF_TEXT_TOKEN] = -1e9
         for token in self.state.processed_tokens_counts:
+            if token in EXCEPTIONAL_TOKENS:
+                continue
             logits[token] -= (
                 # 传统惩罚
                 self.presence_penalty
