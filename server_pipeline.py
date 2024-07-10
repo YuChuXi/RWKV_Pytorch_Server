@@ -135,18 +135,40 @@ class RWKVState:
 
     @run_in_async_thread
     def load(self, state_name: str):
-        if not check_file(f"data/{state_name}/tokens.pkl"):
+        if not check_file(f"data/{state_name}/state.pth"):
             return None
 
-        with open(f"data/{state_name}/tokens.pkl", "rb") as f:
-            data: Dict[str, object] = pickle.load(f)
-
-        self.processed_tokens: List[int] = data["processed_tokens"]
-        self.logits: torch.Tensor = data["logits"]
-        self.processed_tokens_counts: Dict[int, int] = data["processed_tokens_counts"]
+        have_history = False
+        try:
+            with open(f"data/{state_name}/tokens.pkl", "rb") as f:
+                data: Dict[str, object] = pickle.load(f)
+                self.processed_tokens: List[int] = data["processed_tokens"]
+                self.logits: torch.Tensor = data["logits"]
+                self.processed_tokens_counts: Dict[int, int] = data[
+                    "processed_tokens_counts"
+                ]
+                have_history = True
+        except:
+            prxxx(f" ! State: {state_name} missing history ! ")
         # self.state: torch.Tensor = np.sinh(np.load(f"data/{state_name}/state.npy").astype(np.float32) / 24)
         with torch.no_grad():
-            self.state: torch.Tensor = torch.load(f"data/{state_name}/state.pth")
+            self.state: torch.Tensor | Dict[str, torch.Tensor] = torch.load(
+                f"data/{state_name}/state.pth", map_location="cpu"
+            )
+            if not isinstance(self.state, torch.Tensor):
+                # 32, 64, 64, 64 -> (32*(64+2)), (64*64)
+                n_layer, n_head, head_size, _ = len(self.state), state.shape
+                state = torch.zeros(1, n_layer * (head_size, +2), n_head * head_size)
+                for i, (key, value) in enumerate(self.state.items()):
+                    state[
+                        :, ((2 + head_size) * i + 2) : ((2 + head_size) * (i + 1)), :
+                    ] = (value.contiguous().permute(0, 2, 1).reshape(head_size, -1))
+                self.state = state
+            if not have_history:
+                self.logits = torch.zeros(model.emb.weight.shape[0])
+            self.state.to(device=model.emb.weight.device, dtype=model.emb.weight.dtype)
+            self.logits.to(device=model.emb.weight.device, dtype=model.emb.weight.dtype)
+
         return self
 
     @run_in_async_thread
@@ -176,17 +198,21 @@ class RWKVState:
         self.logits = self.logits * (1 - weight) + state.logits * weight
 
         return self
-    
+
     async def mix_max(self, state, weight: float):
         staot0 = await self.copy()
         if weight == 0:
             return staot0
         mean = staot0.state.mean()
-        staot0.state = torch.maximum(staot0.state, state.state / state.state.mean() * weight)
+        staot0.state = torch.maximum(
+            staot0.state, state.state / state.state.mean() * weight
+        )
         staot0.state = staot0.state / staot0.state.mean() * mean
 
         mean = staot0.logits.mean()
-        staot0.logits = torch.maximum(staot0.logits, state.logits / state.logits.mean() * weight)
+        staot0.logits = torch.maximum(
+            staot0.logits, state.logits / state.logits.mean() * weight
+        )
         staot0.logits = staot0.logits / staot0.logits.mean() * mean
         return staot0
 
@@ -195,11 +221,15 @@ class RWKVState:
         if weight == 0:
             return self
         mean = self.state.mean()
-        self.state = torch.maximum(self.state, state.state / state.state.mean() * weight)
+        self.state = torch.maximum(
+            self.state, state.state / state.state.mean() * weight
+        )
         self.state = self.state / self.state.mean() * mean
 
         mean = self.logits.mean()
-        self.logits = torch.maximum(self.logits, state.logits / state.logits.mean() * weight)
+        self.logits = torch.maximum(
+            self.logits, state.logits / state.logits.mean() * weight
+        )
         self.logits = self.logits / self.logits.mean() * mean
         return self
 
@@ -216,12 +246,12 @@ state_cache: Dict[str, RWKVState] = {}
 class RWKVPrompt:
     def __init__(
         self,
-        string: str = None,
-        file: str = None,
-        language: str = CHAT_LANGUAGE,
-        type: str = CHAT_PROMPT_TYPE,
+        string: str | None = None,
+        file: str | None = None,
+        language: str | None = CHAT_LANGUAGE,
+        type: str | None = CHAT_PROMPT_TYPE,
     ) -> None:
-        if not string is None:
+        if string is not None:
             prxxx(f"Loading RWKV prompt   string: {self.get_preview(string)}")
             self.prompt = string
             self.user = None
@@ -231,6 +261,7 @@ class RWKVPrompt:
             self.multiuser = False
             self.split = "\n\n"
             self.format = None
+            self.state = None
         else:
             prompt_config = f"prompt/{language}-{type}.json"
             if not file is None:
@@ -248,6 +279,7 @@ class RWKVPrompt:
                 self.multiuser = prompt_data.get("multiuser", False)
                 self.split = prompt_data.get("split", "\n\n")
                 self.format = prompt_data.get("format", None)
+                self.state = prompt_data.get("state", None)
                 if check_file(self.prompt):
                     with open(self.prompt, "r", encoding="utf-8", errors="ignore") as f:
                         self.prompt = f.read()
@@ -267,12 +299,12 @@ class RWKVPrompt:
         if isinstance(self.ignore, str):
             self.ignore = re.compile(self.ignore)
         return self.ignore.sub("", string)
-    
-    def process_format(self, name, message = "", tail = None):
+
+    def process_format(self, name, message="", tail=None):
         tail = self.split if tail is None else tail
         if self.format is None:
             return f"{name}{self.separator} {message}{tail}"
-        return self.format%(name, message) + tail
+        return self.format % (name, message) + tail
 
 
 DEFAULT_PROMPT = RWKVPrompt()
@@ -335,11 +367,16 @@ class RWKVEmbryo:
             reprompt
             or (not await check_file_async(f"data/{self.default_state}/tokens.pkl"))
         ):
-            prompt_tokens = tokenizer_encode(prompt.prompt)
-            prxxx(f"Process prompt tokens   length: {len(prompt_tokens)} tok", q=q)
-            ltime = time.time()
-            await self.process_tokens(prompt_tokens)
-            prxxx(f"Processed prompt tokens   used: {int(time.time()-ltime)} s", q=q)
+            if prompt.state is None:
+                await self.state.load(prompt.state)
+                prxxx(f"Load prompt state   name: {prompt.state}", q=q)
+            else:
+                prompt_tokens = tokenizer_encode(prompt.prompt)
+                ltime = time.time()
+                await self.process_tokens(prompt_tokens)
+                prxxx(
+                    f"Processed prompt tokens   used: {int(time.time()-ltime)} s", q=q
+                )
             await self.save_state(self.id, must=True, q=q)
             await self.save_state(self.default_state, must=True, q=q)
             self.mlog.write(
@@ -360,12 +397,12 @@ class RWKVEmbryo:
                 await asyncio.sleep(0)
                 if name not in state_cache:
                     if (state := await RWKVState().load(name)) is not None:
-                        state_cache[name] = await (state.copy())
+                        state_cache[name] = await state.copy()
                         prxxx(f"Cache state   name: {name}", q=q)
                 if loaded:
                     continue
                 if name in state_cache:
-                    loaded = self.state = await (state_cache[name].copy())
+                    loaded = self.state = await state_cache[name].copy()
                     prxxx(f"Load state from cache   name: {name}", q=q)
                     self.mlog.write(
                         f" : Load state [{name}]\n\n".encode(encoding="utf-8")
@@ -468,11 +505,11 @@ class RWKVEmbryo:
                 self.presence_penalty
                 + self.state.processed_tokens_counts[token] * self.frequency_penalty
                 # 新惩罚
-                #+ self.repeat_penalty ** self.state.processed_tokens_counts[token]
-                #- 1
+                # + self.repeat_penalty ** self.state.processed_tokens_counts[token]
+                # - 1
             )
 
-            logits[NEW_LINE_OF_TEXT_TOKEN] *= NEW_LINE_LORA ** len_gen
+            logits[NEW_LINE_OF_TEXT_TOKEN] *= NEW_LINE_LORA**len_gen
         return logits
 
     @log_call
@@ -539,7 +576,7 @@ class RWKVEmbryo:
         logits = self.state.logits
         answer: bytes = b""
         end: bytes = end_of.encode(encoding="utf-8")
-        
+
         async with self.state_lock:
             for i in tqdm.trange(
                 max(max_len, len_head),
@@ -667,11 +704,21 @@ class RWKVChater(RWKVChaterEmbryo):
         )  # .strip() # 昵称和提示词不一定一致
 
         if self.prompt.multiuser:
-            user = self.prompt.user if (chatuser is None) or (chatuser == "") or (chatuser == self.prompt.bot) else chatuser
+            user = (
+                self.prompt.user
+                if (chatuser is None)
+                or (chatuser == "")
+                or (chatuser == self.prompt.bot)
+                else chatuser
+            )
         else:
-            message = message.replace(chatuser, self.prompt.user) if (chatuser is None) or (chatuser == "") else message
+            message = (
+                message.replace(chatuser, self.prompt.user)
+                if (chatuser is None) or (chatuser == "")
+                else message
+            )
 
-        head = tokenizer_encode(self.prompt.process_format(self.prompt.bot, tail = ""))
+        head = tokenizer_encode(self.prompt.process_format(self.prompt.bot, tail=""))
         if message != "" and message[0] != "+":
             prompt = self.prompt.process_format(user, f"{message}")
             await self.process_tokens(tokenizer_encode(prompt))
@@ -685,7 +732,7 @@ class RWKVChater(RWKVChaterEmbryo):
             raise RWKVInterruptException
 
         answer, original = await self.gen_future(head=head, end_of=self.prompt.split)
-        #await self.state.mix_max_inplace(state_cache[self.default_state], OBSTINATE)
+        # await self.state.mix_max_inplace(state_cache[self.default_state], OBSTINATE)
         await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE)
         # await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE)
 
@@ -719,7 +766,11 @@ class RWKVGroupChater(RWKVChaterEmbryo):
     async def send_message(self, message: str, chatuser: str = None) -> None:
         self.plog.write(f"{chatuser}: {message}\n\n")
 
-        chatuser = self.prompt.user if (chatuser is None) or (chatuser == "") or (chatuser == self.prompt.bot) else chatuser
+        chatuser = (
+            self.prompt.user
+            if (chatuser is None) or (chatuser == "") or (chatuser == self.prompt.bot)
+            else chatuser
+        )
         if "-temp=" in message:
             temperature = float(message.split("-temp=")[1].split(" ")[0])
             message = message.replace("-temp=" + f"{temperature:g}", "")
@@ -738,7 +789,7 @@ class RWKVGroupChater(RWKVChaterEmbryo):
             self.message_cache.clear()
             return
 
-        assert self.prompt.multiuser , "Group Chat need multiuser prompt!"
+        assert self.prompt.multiuser, "Group Chat need multiuser prompt!"
 
         self.message_cache.append([chatuser, message, time.time()])
         if len(self.message_cache) > 256:
@@ -758,16 +809,17 @@ class RWKVGroupChater(RWKVChaterEmbryo):
             self.clean_interrupt()
             raise RWKVInterruptException
 
-        head = tokenizer_encode(self.prompt.process_format(self.prompt.bot, tail = ""))
+        head = tokenizer_encode(self.prompt.process_format(self.prompt.bot, tail=""))
 
         answer, original = await self.gen_future(head=head, end_of=self.prompt.split)
         await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE)
         # await self.state.mix_max_inplace(state_cache[self.default_state], OBSTINATE)
-        
+
         answer = answer.replace(self.prompt.bot, nickname).strip()
 
         self.plog.write(f"{answer}\n\n")
         return answer, original, await self.is_want_to_say(head)
+
 
 # ========================================== Other ================================================
 

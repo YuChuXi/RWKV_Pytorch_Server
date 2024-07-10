@@ -67,6 +67,7 @@ CHAT_LANGUAGE: str = "Chinese"
 # Chat: chat prompt (need a large model for adequate quality, 7B+).
 CHAT_PROMPT_TYPE: str = "Chat-MoZi-N"
 CHAT_PROMPT_TYPE: str = "Chat-MoZi-QN"
+CHAT_PROMPT_TYPE: str = "State-QUN"
 # CHAT_PROMPT_TYPE = "Chat-Ella"
 # CHAT_PROMPT_TYPE = "Chat-XiaoPu"
 # CHAT_PROMPT_TYPE = "Chat-MuXue"
