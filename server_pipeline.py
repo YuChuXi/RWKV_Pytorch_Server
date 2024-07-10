@@ -359,7 +359,7 @@ class RWKVEmbryo:
     async def load_state(
         self,
         state_name: str,
-        prompt: RWKVPrompt = DEFAULT_PROMPT,
+        prompt: RWKVPrompt = None,
         reprompt=False,
         q: bool = False,
     ) -> None:
