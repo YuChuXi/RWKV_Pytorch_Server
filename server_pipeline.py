@@ -274,7 +274,7 @@ class RWKVPrompt:
                 self.user = prompt_data.get("user", "<|user|>")
                 self.bot = prompt_data.get("bot", "<|me|>")
                 self.separator = prompt_data.get("separator", ":")
-                self.prompt = prompt_data.get("prompt", "")
+                self.prompt = prompt_data.get("prompt", None)
                 self.ignore = prompt_data.get("ignore", "")
                 self.multiuser = prompt_data.get("multiuser", False)
                 self.split = prompt_data.get("split", "\n\n")
