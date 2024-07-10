@@ -284,7 +284,7 @@ class RWKVPrompt:
                     with open(self.prompt, "r", encoding="utf-8", errors="ignore") as f:
                         self.prompt = f.read()
 
-            assert self.prompt != "", "Prompt must not be empty"
+            assert self.prompt != "" or self.state is not None, "Prompt must not be empty"
 
     def __str__(self):
         return "None" if self.prompt is None else self.get_preview(self.prompt)

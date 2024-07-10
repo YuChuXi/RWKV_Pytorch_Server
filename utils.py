@@ -59,19 +59,27 @@ def gen_echo():
 
 
 def check_dir(path):
+    if path is None:
+        return False
     if not os.path.isdir(path):
         os.makedirs(path)
 
 
 def check_file(path):
+    if path is None:
+        return False
     return os.path.isfile(path)
 
 
 @run_in_async_thread
 def check_dir_async(path):
+    if path is None:
+        return False
     if not os.path.isdir(path):
         os.makedirs(path)
 
 @run_in_async_thread
 def check_file_async(path):
+    if path is None:
+        return False
     return os.path.isfile(path)
