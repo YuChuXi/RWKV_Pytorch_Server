@@ -367,7 +367,7 @@ class RWKVEmbryo:
             reprompt
             or (not await check_file_async(f"data/{self.default_state}/tokens.pkl"))
         ):
-            if prompt.state is None:
+            if prompt.state is not None:
                 await self.state.load(prompt.state)
                 prxxx(f"Load prompt state   name: {prompt.state}", q=q)
             else:
