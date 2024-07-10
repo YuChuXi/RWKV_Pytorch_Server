@@ -428,8 +428,8 @@ class RWKVEmbryo:
         await self.load_state(self.default_state, q=q)
         await self.save_state(self.id, must=True, q=q)
 
-    async def init_state(self) -> None:
-        await self.load_state(self.id, self.prompt)
+    async def init_state(self, **kwargs) -> None:
+        await self.load_state(self.id, **kwargs)
 
     def is_busy(self) -> bool:
         return self.state_lock.locked()
