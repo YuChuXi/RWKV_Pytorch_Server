@@ -9,7 +9,7 @@
 
 # -*- coding: utf-8 -*-
 import time, random, re, sys, os, signal, json, tqdm
-from utils import prxxx, gen_echo, clean_symbols
+from utils import prxxx, gen_echo, clean_symbols, check_file_async, rm_file_async
 from quart import Quart, websocket, request
 from hypercorn.config import Config
 from hypercorn.asyncio import serve
@@ -179,6 +179,9 @@ async def reset_state(id: str, echo=None):
     if id in group_chaters:
         await group_chaters[id].reset_state()
         flag = True
+    if not flag and await check_file_async(f"data/{id}/state.pth"):
+        await rm_file_async(f"data/{id}/state.pth")
+        await rm_file_async(f"data/{id}/tokens.pkl")
     return flag
 
 async def get_history(id: str, echo=None):

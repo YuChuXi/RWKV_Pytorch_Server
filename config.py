@@ -16,7 +16,7 @@ TOP_P: float = 0.3
 # Penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.
 PRESENCE_PENALTY: float = 0.0
 # Penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.
-FREQUENCY_PENALTY: float = 2.0
+FREQUENCY_PENALTY: float = 1.0
 # When the model repeats several words, the penalty will increase sharply and pull the model back, set it to 1.0-1.2 is a good idea.
 PRPEAT_PENALTY: float = 1.00
 # Mitigating penalties after a certain length of context

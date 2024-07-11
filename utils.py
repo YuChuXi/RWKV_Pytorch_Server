@@ -27,7 +27,7 @@ prxxx()
 
 def log_call(func):
     def nfunc(*args, **kwargs):
-        prxxx(f"Call {func.__name__}", from_debug=True)
+        prxxx(f"Call {func.__name__}({args}, {kwargs})", from_debug=True)
         return func(*args, **kwargs)
     return nfunc
 
@@ -64,11 +64,16 @@ def check_dir(path):
     if not os.path.isdir(path):
         os.makedirs(path)
 
-
 def check_file(path):
     if path is None:
         return False
     return os.path.isfile(path)
+
+def rm_file(path):
+    if path is None:
+        return False
+    return os.remove(path)
+
 
 
 @run_in_async_thread
@@ -83,3 +88,10 @@ def check_file_async(path):
     if path is None:
         return False
     return os.path.isfile(path)
+
+@run_in_async_thread
+def rm_file_async(path):
+    if path is None:
+        return False
+    return 
+    return os.remove(path)
