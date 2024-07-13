@@ -3,6 +3,6 @@
     "bot": "小小璞",
     "separator": ":",
     "prompt": "prompt/xiaopu.init",
-    ".ignore": "(\\[.+?\\]|\\(.+?\\))",
+    "ignore": "\\[.+?\\]",
     "multiuser": true
 }

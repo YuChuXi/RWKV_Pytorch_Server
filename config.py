@@ -22,7 +22,7 @@ PRPEAT_PENALTY: float = 1.00
 # Mitigating penalties after a certain length of context
 PENALTY_MITIGATE: float = 1 / 0.996
 # These tokens will not be punished FREQUENCY_PENALTY
-EXCEPTIONAL_TOKENS: Dict[int, float] = {261: 0.5,}
+EXCEPTIONAL_TOKENS: Dict[int, float] = {261: 0.2,}
 # How engaged a model is with prompt, which could be used to mitigate Alzheimer's disease in small models
 OBSTINATE_ALPHA: float = 0.1
 # The larger the value, the smaller the impact on the semantic layer.
@@ -30,7 +30,7 @@ OBSTINATE_ALPHA: float = 0.1
 # -100:u, 0:-, 100:^
 OBSTINATE_BATA: float = 10
 
-MAX_GENERATION_LENGTH: int = 384
+MAX_GENERATION_LENGTH: int = 128
 END_OF_TEXT_TOKEN: int = 0
 NEW_LINE_OF_TEXT_TOKEN: int = 261
 # The bigger you are, the less you talk. 1.000 - 1.005
@@ -74,6 +74,7 @@ CHAT_PROMPT_TYPE: str = "State-QUN"
 # CHAT_PROMPT_TYPE = "Chat-Ella"
 CHAT_PROMPT_TYPE = "Chat-XiaoPu"
 CHAT_PROMPT_TYPE = "Chat-MuXue"
+CHAT_PROMPT_TYPE = "Chat-Qun"
 
 
 
