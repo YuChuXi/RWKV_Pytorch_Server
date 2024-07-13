@@ -47,7 +47,7 @@ MODEL_NAME = "weight/RWKV-x060-World-3B-v2.1-Claude-nsfw"
 #MODEL_NAME = "weight/RWKV-x060-World-3B-v2.1-xuexue-v4"
 MODEL_NAME = "weight/RWKV-x060-World-7B-v2.1-20240507-ctx4096"
 #MODEL_NAME = "weight/rwkv-x060-14b-world-v2.1-93%trained-20240602-ctx4k.pth"
-#MODEL_NAME = "weight/RWKV-x060-World-3B-v2.1-20240417-ctx4096.pth"
+MODEL_NAME = "weight/mymodel/RWKV-x060-World-7B-v2.1-20240507-ctx4096-PISSA-3.pth"
 
 MODEL_STATE_NAME: str = "default.state"
 
@@ -72,8 +72,8 @@ CHAT_PROMPT_TYPE: str = "Chat-MoZi-N"
 CHAT_PROMPT_TYPE: str = "Chat-MoZi-QN"
 CHAT_PROMPT_TYPE: str = "State-QUN"
 # CHAT_PROMPT_TYPE = "Chat-Ella"
-# CHAT_PROMPT_TYPE = "Chat-XiaoPu"
-# CHAT_PROMPT_TYPE = "Chat-MuXue"
+CHAT_PROMPT_TYPE = "Chat-XiaoPu"
+CHAT_PROMPT_TYPE = "Chat-MuXue"
 
 
 

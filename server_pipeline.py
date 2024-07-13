@@ -235,10 +235,12 @@ class RWKVState:
         if weight == 0:
             return self
         
-        h = self.state.shape[-2]
+        b, h , _ = self.state.shape
         w = torch.arange(0, h, device=self.state.device, dtype=self.state.dtype) // (model.head_size + 2)
+        w = w.reshape(b, h)
         w = w / w.max()
         w = weight / (OBSTINATE_BATA * (w - 0.5)**2 + 1)
+        w = w.reshape(1, -1, 1)
         self.state = self.state * (1 - w) + state.state * w
 
         self.logits = self.logits * (1 - weight) + state.logits * weight
