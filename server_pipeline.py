@@ -220,7 +220,7 @@ class RWKVState:
         if weight == 0:
             return staot0
         
-        h = state.shape[-2]
+        h = state.shape.state[-2]
         w = torch.arange(0, h, device=staot0.state.device, dtype=staot0.state.dtype) // (model.head_size + 2)
         w = w / w.max()
         w = weight / (OBSTINATE_BATA * (w - 0.5)**2 + 1)
@@ -236,7 +236,7 @@ class RWKVState:
         if weight == 0:
             return self
         
-        h = state.shape[-2]
+        h = state.shape.state[-2]
         w = torch.arange(0, h, device=self.state.device, dtype=self.state.dtype) // (model.head_size + 2)
         w = w / w.max()
         w = weight / (OBSTINATE_BATA * (w - 0.5)**2 + 1)
