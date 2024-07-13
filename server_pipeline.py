@@ -37,7 +37,8 @@ from config import (
     FREQUENCY_PENALTY,
     PRPEAT_PENALTY,
     EXCEPTIONAL_TOKENS,
-    OBSTINATE,
+    OBSTINATE_ALPHA,
+    OBSTINATE_BATA,
     PENALTY_MITIGATE,
     MAX_GENERATION_LENGTH,
     END_OF_TEXT_TOKEN,
@@ -95,7 +96,6 @@ def tokenizer_decode(l: List[int]) -> str:
 
 
 # ========================================= Embryo states =========================================
-
 
 class RWKVState:
     @log_call
@@ -213,7 +213,37 @@ class RWKVState:
         self.logits = self.logits * (1 - weight) + state.logits * weight
 
         return self
+    
+    @log_call
+    async def mix_n(self, state, weight: float):
+        staot0 = await self.copy()
+        if weight == 0:
+            return staot0
+        
+        h = staot0.state.shape[-2]
+        w = torch.arange(0, h, device=staot0.state.device, dtype=staot0.state.dtype) // (model.head_size + 2)
+        w = w / w.max()
+        w = weight / (OBSTINATE_BATA * (w - 0.5)**2 + 1)
+        staot0.state = staot0.state * (1 - w) + state.state * w
 
+        staot0.logits = staot0.logits * (1 - weight) + state.logits * weight
+        return staot0
+    
+    @log_call
+    @run_in_async_thread
+    def mix_n_inplace(self, state, weight: float):
+        if weight == 0:
+            return self
+        
+        h = self.state.shape[-2]
+        w = torch.arange(0, h, device=self.state.device, dtype=self.state.dtype) // (model.head_size + 2)
+        w = w / w.max()
+        w = weight / (OBSTINATE_BATA * (w - 0.5)**2 + 1)
+        self.state = self.state * (1 - w) + state.state * w
+
+        self.logits = self.logits * (1 - weight) + state.logits * weight
+        return self
+    
     @log_call
     async def mix_max(self, state, weight: float):
         staot0 = await self.copy()
@@ -774,9 +804,9 @@ class RWKVChater(RWKVChaterEmbryo):
             raise RWKVInterruptException
 
         answer, original = await self.gen_future(head=head, end_of=self.prompt.split)
-        # await self.state.mix_max_inplace(state_cache[self.default_state], OBSTINATE)
-        await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE)
-        # await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE)
+        # await self.state.mix_max_inplace(state_cache[self.default_state], OBSTINATE_ALPHA)
+        await self.state.mix_n_inplace(state_cache[self.default_state], OBSTINATE_ALPHA)
+        # await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE_ALPHA)
 
         answer = answer.replace(user, chatuser)
         answer = answer.replace(self.prompt.bot, nickname).strip()
@@ -859,8 +889,8 @@ class RWKVGroupChater(RWKVChaterEmbryo):
         head = tokenizer_encode(self.prompt.process_format(self.prompt.bot, tail=""))
 
         answer, original = await self.gen_future(head=head, end_of=self.prompt.split)
-        await self.state.mix_inplace(state_cache[self.default_state], OBSTINATE)
-        # await self.state.mix_max_inplace(state_cache[self.default_state], OBSTINATE)
+        await self.state.mix_n_inplace(state_cache[self.default_state], OBSTINATE_ALPHA)
+        # await self.state.mix_max_inplace(state_cache[self.default_state], OBSTINATE_ALPHA)
 
         answer = answer.replace(self.prompt.bot, nickname).strip()
 

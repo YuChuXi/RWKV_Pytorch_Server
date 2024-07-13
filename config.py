@@ -24,8 +24,11 @@ PENALTY_MITIGATE: float = 1 / 0.996
 # These tokens will not be punished FREQUENCY_PENALTY
 EXCEPTIONAL_TOKENS: Dict[int, float] = {261: 0.5,}
 # How engaged a model is with prompt, which could be used to mitigate Alzheimer's disease in small models
-OBSTINATE: float = 0 # 0.1
-
+OBSTINATE_ALPHA: float = 0.1
+# The larger the value, the smaller the impact on the semantic layer.
+# Reference formula: a / (b * (x - 0.5)**2 + 1), x in [0, 1]
+# -100:u, 0:-, 100:^
+OBSTINATE_BATA: float = 10
 
 MAX_GENERATION_LENGTH: int = 384
 END_OF_TEXT_TOKEN: int = 0
