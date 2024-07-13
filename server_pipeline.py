@@ -39,6 +39,7 @@ from config import (
     EXCEPTIONAL_TOKENS,
     OBSTINATE_ALPHA,
     OBSTINATE_BATA,
+    NAGGING,
     PENALTY_MITIGATE,
     MAX_GENERATION_LENGTH,
     END_OF_TEXT_TOKEN,
@@ -735,7 +736,7 @@ class RWKVChaterEmbryo(RWKVEmbryo):
         probs = sampler.probs_logits(
             self.state.logits.clone(), self.temperature, self.top_p
         ).cpu()
-        return probs[head[0]].item()
+        return probs[head[0]].item() * NAGGING
 
 
 # ============================================ Chater =============================================
