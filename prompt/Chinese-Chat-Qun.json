@@ -1,7 +1,7 @@
 {
     "user": "哇哇哇哇！@973649264",
-    "bot": "墨子是个废物喵@3380643076",
-    "prompt": "prompt/qun.init",
+    "bot": "墨子@3380643076",
+    "prompt": "prompt/qun_v2rpy.init",
     "multiuser": true,
     "split": "\n\n",
     "format": "%s: %s",
