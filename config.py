@@ -30,7 +30,7 @@ OBSTINATE_ALPHA: float = 0.1
 # -100:u, 0:-, 100:^
 OBSTINATE_BATA: float = 10
 # The higher, the more say. TOP_P ~ 1
-NAGGING:float = 0.4
+NAGGING:float = 0.33
 MAX_GENERATION_LENGTH: int = 128
 END_OF_TEXT_TOKEN: int = 0
 NEW_LINE_OF_TEXT_TOKEN: int = 261
