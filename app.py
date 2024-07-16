@@ -87,6 +87,7 @@ async def chat(
     id: str = "-b2bi0JgEhJru87HTcRjh9vdT",
     user: str = "木子",
     nickname: str = "墨子",
+    addhead: str = "",
     state: str = MODEL_STATE_NAME,
     debug=False,
     echo=None,
@@ -103,7 +104,7 @@ async def chat(
     prxxx(f" #    $33<Chat>   $34<id>: {id} | $34<user>: {user} | $34<echo>: {echo}")
     prxxx(f" #    -M->[$35<{message}>]-{echo}")
     answer, original, is_want_to_say = await chaters[id].chat(
-        message=message, chatuser=user, nickname=nickname, debug=debug
+        message=message, chatuser=user, nickname=nickname, addhead=addhead, debug=debug
     )
 
     prxxx()
@@ -144,6 +145,7 @@ async def group_chat_send(
 async def group_chat_get(
     id: str = "-b2bi0JgEhJru87HTcRjh9vdT",
     nickname: str = "墨子",
+    addhead: str = "",
     state: str = MODEL_STATE_NAME,
     echo=None,
 ) -> Tuple[str, bool]:
@@ -156,7 +158,7 @@ async def group_chat_get(
         await group_chaters[id].init_state()
 
     answer, original, is_want_to_say = await group_chaters[id].get_answer(
-        nickname=nickname
+        nickname=nickname, addhead=addhead
     )
 
     prxxx()
@@ -285,6 +287,7 @@ async def W_chat():
             message
             username
             nickname*
+            addhead*
             default_state*
             echo*
             debug*
@@ -319,6 +322,7 @@ async def W_group_chat():
             message+
             username+
             nickname*
+            addhead*
             default_state*
             echo*
         }
@@ -359,7 +363,8 @@ async def before_serving():
         **{
             "id": "init",
             "message": APP_TEST_MESSAGE,
-            "user": "测试者",
+            "user": "测试者@474667839",
+            "addhead": "[CQ:at,qq=474667839] "
         }
     )
     prxxx()

@@ -754,6 +754,7 @@ class RWKVChater(RWKVChaterEmbryo):
         message: str,
         chatuser: str = None,
         nickname: str = None,
+        addhead: str = "",
         debug: bool = False,
     ) -> Tuple[str, str, float]:
         self.debug = debug
@@ -792,7 +793,7 @@ class RWKVChater(RWKVChaterEmbryo):
                 else message
             )
 
-        head = tokenizer_encode(self.prompt.process_format(self.prompt.bot, tail=""))
+        head = tokenizer_encode(self.prompt.process_format(self.prompt.bot, tail="") + addhead)
         if message != "" and message[0] != "+":
             prompt = self.prompt.process_format(user, f"{message}")
             await self.process_tokens(tokenizer_encode(prompt))
@@ -812,6 +813,7 @@ class RWKVChater(RWKVChaterEmbryo):
 
         answer = answer.replace(user, chatuser)
         answer = answer.replace(self.prompt.bot, nickname).strip()
+        answer = addhead + answer
 
         return answer, original, await self.is_want_to_say(head)
 
@@ -877,6 +879,7 @@ class RWKVGroupChater(RWKVChaterEmbryo):
     async def get_answer(
         self,
         nickname: str = None,
+        addhead:str = ""
     ) -> Tuple[str, str, float]:
         self.plog.write(f"{nickname}: ")
 
@@ -888,13 +891,14 @@ class RWKVGroupChater(RWKVChaterEmbryo):
             self.clean_interrupt()
             raise RWKVInterruptException
 
-        head = tokenizer_encode(self.prompt.process_format(self.prompt.bot, tail=""))
+        head = tokenizer_encode(self.prompt.process_format(self.prompt.bot, tail="") + addhead)
 
         answer, original = await self.gen_future(head=head, end_of=self.prompt.split)
         await self.state.mix_n_inplace(state_cache[self.default_state], OBSTINATE_ALPHA)
         # await self.state.mix_max_inplace(state_cache[self.default_state], OBSTINATE_ALPHA)
 
         answer = answer.replace(self.prompt.bot, nickname).strip()
+        answer = addhead + answer
 
         self.plog.write(f"{answer}\n\n")
         return answer, original, await self.is_want_to_say(head)
