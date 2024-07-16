@@ -10,7 +10,7 @@ RWKV_DEVICE = "cuda"
 # ======================================== Script settings ========================================
 
 # Sampling temperature. It could be a good idea to increase temperature when top_p is low.
-TEMPERATURE: float = 1.3
+TEMPERATURE: float = 1.0
 # For better Q&A accuracy and less diversity, reduce top_p (to 0.5, 0.2, 0.1 etc.)
 TOP_P: float = 0.3
 # Penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.
@@ -30,7 +30,7 @@ OBSTINATE_ALPHA: float = 0.1
 # -100:u, 0:-, 100:^
 OBSTINATE_BATA: float = 10
 # The higher, the more say. TOP_P ~ 1
-NAGGING:float = 0.33
+NAGGING:float = 0.90
 MAX_GENERATION_LENGTH: int = 128
 END_OF_TEXT_TOKEN: int = 0
 NEW_LINE_OF_TEXT_TOKEN: int = 261
