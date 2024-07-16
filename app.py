@@ -100,15 +100,15 @@ async def chat(
         await chaters[id].init_state()
 
     prxxx()
-    prxxx(f" #    Chat   id: {id} | user: {user} | echo: {echo}")
-    prxxx(f" #    -M->[{message}]-{echo}")
+    prxxx(f" #    $33<Chat>   $34<id>: {id} | $34<user>: {user} | $34<echo>: {echo}")
+    prxxx(f" #    -M->[$35<{message}>]-{echo}")
     answer, original, is_want_to_say = await chaters[id].chat(
         message=message, chatuser=user, nickname=nickname, debug=debug
     )
 
     prxxx()
-    prxxx(f" #    Chat   id: {id} | nickname: {nickname} | echo: {echo}")
-    prxxx(f" #    {echo}-[{original}][{is_want_to_say}]<-O-")
+    prxxx(f" #    $33<Chat>   $34<id>: {id} | $34<nickname>: {nickname} | $34<echo>: {echo}")
+    prxxx(f" #    {echo}-[$36<{original}>][$36<{is_want_to_say}>]<-O-")
     prxxx(f" #    {echo}-[{answer}]<-A-")
 
     # 如果接受到的内容为空，则给出相应的回复
@@ -136,8 +136,8 @@ async def group_chat_send(
         await group_chaters[id].init_state()
 
     prxxx()
-    prxxx(f" #    Send Gchat   id: {id} | user: {user} | echo: {echo}")
-    prxxx(f" #    -M->[{message}]-{echo}")
+    prxxx(f" #    $33<Send Gchat>   $34<id>: {id} | $34<user>: {user} | $34<echo>: {echo}")
+    prxxx(f" #    -M->[$35<{message}>]-{echo}")
     await group_chaters[id].send_message(message=message, chatuser=user)
 
 
@@ -160,8 +160,8 @@ async def group_chat_get(
     )
 
     prxxx()
-    prxxx(f" #    Get gchat   id: {id} | nickname: {nickname} | echo: {echo}")
-    prxxx(f" #    {echo}-[{original}][{is_want_to_say}]<-O-")
+    prxxx(f" #    $33<Get gchat>   $34<id>: {id} | $34<nickname>: {nickname} | $34<echo>: {echo}")
+    prxxx(f" #    {echo}-[$36<{original}>][$36<{is_want_to_say}>]<-O-")
     prxxx(f" #    {echo}-[{answer}]<-A-")
 
     # 如果接受到的内容为空，则给出相应的回复

@@ -63,7 +63,7 @@ elif RWKV_DEVICE == "npu":
 torch.random.manual_seed(int(time.time() * 1e6 % 2**30) if SEED is None else SEED)
 torch.set_num_threads(THREADS)
 
-prxxx(f"Loading RWKV model   file: {MODEL_NAME}")
+prxxx(f"$32<Loading RWKV model>   $34<file>: {MODEL_NAME}")
 model = RWKV_RNN(
     args={
         "MODEL_NAME": MODEL_NAME,
@@ -76,11 +76,11 @@ model = RWKV_RNN(
 
 check_dir("data")
 if check_file(f"data/tokenizer.pkl"):
-    prxxx(f"Loading tokenizer   file: data/tokenizer.pkl")
+    prxxx(f"$32<Loading tokenizer>   file: data/tokenizer.pkl")
     with open(f"data/tokenizer.pkl", "rb") as f:
         tokenizer: RWKV_TOKENIZER = pickle.load(f)
 else:
-    prxxx(f"Loading tokenizer   file: {TONKEIZER_DICT}")
+    prxxx(f"$32<Loading tokenizer>   file: {TONKEIZER_DICT}")
     tokenizer: RWKV_TOKENIZER = RWKV_TOKENIZER(TONKEIZER_DICT)
     with open(f"data/tokenizer.pkl", "wb") as f:
         pickle.dump(tokenizer, f)
@@ -142,7 +142,6 @@ class RWKVState:
     @log_call
     @run_in_async_thread
     def load(self, state_name: str):
-        print(state_name)
         if not check_file(f"data/{state_name}/state.pth"):
             return None
 
@@ -157,7 +156,7 @@ class RWKVState:
                 ]
                 have_history = True
         except:
-            prxxx(f" ! State: {state_name} missing history ! ")
+            prxxx(f" $31<! State>: {state_name} missing history ! ")
         # self.state: torch.Tensor = np.sinh(np.load(f"data/{state_name}/state.npy").astype(np.float32) / 24)
         with torch.no_grad():
             load_state: torch.Tensor | Dict[str, torch.Tensor] | None = torch.load(
@@ -304,7 +303,7 @@ class RWKVPrompt:
         type: str | None = CHAT_PROMPT_TYPE,
     ) -> None:
         if string is not None:
-            prxxx(f"Loading RWKV prompt   string: {self.get_preview(string)}")
+            prxxx(f"$32<Loading RWKV prompt>   $34<string>: {self.get_preview(string)}")
             self.prompt = string
             self.user = None
             self.bot = None
@@ -318,7 +317,7 @@ class RWKVPrompt:
             prompt_config = f"prompt/{language}-{type}.json"
             if not file is None:
                 prompt_config = file
-            prxxx(f"Loading RWKV prompt   config: {prompt_config}")
+            prxxx(f"$32<Loading RWKV prompt>   $34<config>: {prompt_config}")
             with open(
                 prompt_config, "r", encoding="utf-8", errors="ignore"
             ) as json_file:
@@ -411,7 +410,7 @@ class RWKVEmbryo:
         self.have_interrupt: bool = False
 
         self.mlog = open(f"data/{self.id}/model.log", "ab+")
-        prxxx(f"Init RWKV   id: {id} | state: {state_name} | prompt: {prompt}")
+        prxxx(f"$32<Init RWKV>   $34<id>: {id} | $34<state>: {state_name} | $34<prompt>: {prompt}")
 
     @log_call
     def __del__(self):
@@ -433,7 +432,7 @@ class RWKVEmbryo:
             ltime = time.time()
             await self.process_tokens(prompt_tokens)
             prxxx(
-                f"Processed prompt tokens   used: {int(time.time()-ltime)} s", q=q
+                f"$32<Processed prompt tokens>   $34<used>: {int(time.time()-ltime)} s", q=q
             )
             await self.save_state(self.id, must=True, q=q)
             await self.save_state(self.default_state, must=True, q=q)
@@ -452,7 +451,7 @@ class RWKVEmbryo:
         async with self.state_lock:
             loaded = await self.state.load(state_name)
             if loaded:
-                prxxx(f"Load state   name: {state_name}", q=q)
+                prxxx(f"$32<Load state>   $34<name>: {state_name}", q=q)
                 self.mlog.write(
                     f" : Load state [{state_name}]\n\n".encode(encoding="utf-8")
                 )
@@ -461,12 +460,12 @@ class RWKVEmbryo:
                 if name not in state_cache:
                     if (state := await RWKVState().load(name)) is not None:
                         state_cache[name] = await state.copy()
-                        prxxx(f"Cache state   name: {name}", q=q)
+                        prxxx(f"$32<Cache state>   $34<name>: {name}", q=q)
                 if loaded:
                     continue
                 if name in state_cache:
                     loaded = self.state = await state_cache[name].copy()
-                    prxxx(f"Load state from cache   name: {name}", q=q)
+                    prxxx(f"$32<Load state from cache>   $34<name>: {name}", q=q)
                     self.mlog.write(
                         f" : Load state [{name}]\n\n".encode(encoding="utf-8")
                     )
@@ -479,7 +478,7 @@ class RWKVEmbryo:
         if self.need_save or must:
             async with self.state_lock:
                 await self.state.save(state_name)
-            prxxx(f"Save state   name: {state_name}", q=q)
+            prxxx(f"$32<Save state>   $34<name>: {state_name}", q=q)
             self.mlog.write(
                 f" : Save state [{state_name}]\n\n".encode(encoding="utf-8")
             )
@@ -907,7 +906,7 @@ class RWKVGroupChater(RWKVChaterEmbryo):
 @log_call
 async def process_default_state():
     if await check_file_async(f"data/{MODEL_STATE_NAME}/tokens.pkl"):
-        prxxx("Default state was processed")
+        prxxx("$31<Default state was processed>")
     else:
         await RWKVChater(
             id="chat-model", state_name=MODEL_STATE_NAME, prompt=DEFAULT_PROMPT
