@@ -23,10 +23,8 @@ def prxxx(*args, q: bool = False, from_debug=False, **kwargs):
         pass
     print(
         color(time.strftime("RWKV [$33<%Y-%m-%d %H:%M:%S>] ", time.localtime())),
-        color(
-            *[color(a) for a in args],
-            **{k:color(v) for (k, v) in kwargs.items()},
-        ),
+        *[color(a) for a in args],
+        **{k:color(v) for (k, v) in kwargs.items()},
     )
 
 
