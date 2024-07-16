@@ -11,7 +11,7 @@ color_p = re.compile("\\$(.+?)<(.+?)>")
 
 
 def color(s):
-    color_p.sub("\033[\\1m\\2\033[0m", s)
+    return color_p.sub("\033[\\1m\\2\033[0m", s)
 
 
 def prxxx(*args, q: bool = False, from_debug=False, **kwargs):
