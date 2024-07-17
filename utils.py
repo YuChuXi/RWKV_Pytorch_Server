@@ -7,7 +7,7 @@ import quart
 
 from config import MODEL_NAME
 
-color_p = re.compile("\\$(.+?)<(.+?)>")
+color_p = re.compile("\\$(.+?)<([\\s\\S]*?)>")
 
 
 def color(s):
