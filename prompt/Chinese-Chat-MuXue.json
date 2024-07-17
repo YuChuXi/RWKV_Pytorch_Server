@@ -3,6 +3,6 @@
     "bot": "沐雪",
     "separator": ":",
     "prompt": "玉子: 嗯\n\n",
-    ".ignore": "(\\[.+?\\]|\\(.+?\\))",
+    ".ignore": "(\\[.*?\\]|\\(.*?\\))",
     "multiuser": true
 }
