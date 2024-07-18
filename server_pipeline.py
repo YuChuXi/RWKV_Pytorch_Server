@@ -130,7 +130,7 @@ class RWKVState:
             pickle.dump(
                 {
                     "processed_tokens": self.processed_tokens,
-                    "logits": self.logits,
+                    "logits": self.logits.cpu(),
                     "processed_tokens_counts": self.processed_tokens_counts,
                 },
                 f,
