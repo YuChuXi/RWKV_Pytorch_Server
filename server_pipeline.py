@@ -121,7 +121,7 @@ class RWKVState:
             )
             print({
                     "processed_tokens": self.processed_tokens,
-                    "logits": self.logits.grad(),
+                    "logits": self.logits.grad,
                     "processed_tokens_counts": self.processed_tokens_counts,
                 })
         # np.save(f"data/{state_name}/state.npy", (np.arcsinh(self.state) * 24).clip(-128,127).astype(np.int8))
