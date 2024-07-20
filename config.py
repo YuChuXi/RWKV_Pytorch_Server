@@ -10,7 +10,7 @@ RWKV_DEVICE = "cuda"
 # ======================================== Script settings ========================================
 
 # Sampling temperature. It could be a good idea to increase temperature when top_p is low.
-TEMPERATURE: float = 1.1
+TEMPERATURE: float = 1.3
 # For better Q&A accuracy and less diversity, reduce top_p (to 0.5, 0.2, 0.1 etc.)
 TOP_P: float = 0.3
 # Penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.
@@ -22,7 +22,7 @@ PRPEAT_PENALTY: float = 1.00
 # Mitigating penalties after a certain length of context
 PENALTY_MITIGATE: float = 1 / 0.996
 # These tokens will not be punished FREQUENCY_PENALTY
-EXCEPTIONAL_TOKENS: Dict[int, float] = {261: 0.2,}
+EXCEPTIONAL_TOKENS: Dict[int, float] = {261: 0.4,}
 # How engaged a model is with prompt, which could be used to mitigate Alzheimer's disease in small models
 OBSTINATE_ALPHA: float = 0.1
 # The larger the value, the smaller the impact on the semantic layer.
