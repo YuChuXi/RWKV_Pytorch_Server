@@ -5,5 +5,5 @@
     "multiuser": true,
     "split": "\n\n",
     "format": "%s: %s",
-    "ignore": "\\[.*?\\]"
+    ".ignore": "\\[.*?\\]"
 }
