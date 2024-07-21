@@ -103,19 +103,19 @@ async def chat(
     prxxx()
     prxxx(f" #    $33<Chat>   $34<id>: {id} | $34<user>: {user} | $34<echo>: {echo}")
     prxxx(f" #    -M->[$35<{message}>]-{echo}")
-    answer, original, is_want_to_say = await chaters[id].chat(
+    answer, original, want_to_say = await chaters[id].chat(
         message=message, chatuser=user, nickname=nickname, addhead=addhead, debug=debug
     )
 
     prxxx()
     prxxx(f" #    $33<Chat>   $34<id>: {id} | $34<nickname>: {nickname} | $34<echo>: {echo}")
-    prxxx(f" #    {echo}-[$36<{original}>][$36<{is_want_to_say}>]<-O-")
+    prxxx(f" #    {echo}-[$36<{original}>][$36<{want_to_say}>]<-O-")
     prxxx(f" #    {echo}-[{answer}]<-A-")
 
     # 如果接受到的内容为空，则给出相应的回复
     if answer.isspace() or len(answer) == 0:
         answer = "喵喵喵？"
-    return answer, is_want_to_say > chaters[id].top_p
+    return answer, want_to_say > random.random()
 
 
 async def group_chat_send(
@@ -157,19 +157,19 @@ async def group_chat_get(
         group_chaters[id] = RWKVGroupChater(id, state_name=state)
         await group_chaters[id].init_state()
 
-    answer, original, is_want_to_say = await group_chaters[id].get_answer(
+    answer, original, want_to_say = await group_chaters[id].get_answer(
         nickname=nickname, addhead=addhead
     )
 
     prxxx()
     prxxx(f" #    $33<Get gchat>   $34<id>: {id} | $34<nickname>: {nickname} | $34<echo>: {echo}")
-    prxxx(f" #    {echo}-[$36<{original}>][$36<{is_want_to_say}>]<-O-")
+    prxxx(f" #    {echo}-[$36<{original}>][$36<{want_to_say}>]<-O-")
     prxxx(f" #    {echo}-[{answer}]<-A-")
 
     # 如果接受到的内容为空，则给出相应的回复
     if answer.isspace() or len(answer) == 0:
         answer = "喵喵喵？"
-    return answer, is_want_to_say > group_chaters[id].top_p
+    return answer, want_to_say > random.random()
 
 
 async def reset_state(id: str, echo=None):

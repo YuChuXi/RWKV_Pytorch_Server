@@ -728,7 +728,7 @@ class RWKVChaterEmbryo(RWKVEmbryo):
         return prompt
 
     @log_call
-    async def is_want_to_say(self, head: List[int]) -> float:
+    async def want_to_say(self, head: List[int]) -> float:
         # return 0
         if len(head) == 0:
             return 1.0
@@ -736,6 +736,7 @@ class RWKVChaterEmbryo(RWKVEmbryo):
             self.state.logits.clone(), self.temperature, self.top_p
         ).cpu()
         return probs[head[0]].item() * NAGGING
+    
 
 
 # ============================================ Chater =============================================
@@ -815,7 +816,7 @@ class RWKVChater(RWKVChaterEmbryo):
         answer = answer.replace(self.prompt.bot, nickname).strip()
         answer = addhead + answer
 
-        return answer, original, await self.is_want_to_say(head)
+        return answer, original, await self.want_to_say(head)
 
 
 # ========================================= Group Chater ==========================================
@@ -901,7 +902,7 @@ class RWKVGroupChater(RWKVChaterEmbryo):
         answer = addhead + answer
 
         self.plog.write(f"{answer}\n\n")
-        return answer, original, await self.is_want_to_say(head)
+        return answer, original, await self.want_to_say(head)
 
 
 # ========================================== Other ================================================
