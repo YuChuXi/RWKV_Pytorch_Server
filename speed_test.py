@@ -9,7 +9,7 @@ def asend():
         httpx.post(
                 f"http://{config.APP_BIND[0]}/group_chat_send",
                 data={"message": "uibroybavouarfersbogboreo", "id": "tester", "user": "user"},
-                proxies=""
+                proxies={}
         )
 
 for i in range(16):
