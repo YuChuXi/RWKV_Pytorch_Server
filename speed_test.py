@@ -12,5 +12,5 @@ def asend():
                 proxies={}
         )
 
-for i in range(16):
+for i in range(2):
     threading.Thread(target=asend).start()
