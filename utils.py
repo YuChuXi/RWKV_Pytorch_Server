@@ -1,6 +1,6 @@
 from typing import Any, List, Set, Tuple, Callable
 import time, re, random, os, sys
-from typing import Callable
+from typing import Callable, Any
 import asyncio
 import string
 import quart
@@ -52,19 +52,17 @@ def use_async_lock(func):
 def run_in_async_thread(func):
     if sys.version_info.minor < 9:
 
-        async def nfunc(*args, **kwargs) -> asyncio.coroutine:
+        async def nfunc(*args, **kwargs):
             return func(*args, **kwargs)
-
         return nfunc
 
-    async def nfunc(*args, **kwargs) -> asyncio.coroutine:
+    async def nfunc(*args, **kwargs):
         thread = asyncio.to_thread(func, *args, **kwargs)
         return await thread
-
     return nfunc
 
 
-symbols = "[!@#$%^&*+[\]{};:/<>?\|`~]"
+symbols = "[!@#$%^&*+[\\]{};:/<>?\\|`~]"
 
 
 def clean_symbols(s):
