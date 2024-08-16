@@ -1,4 +1,4 @@
-.vscode/settings.json
+.vscode
 *.pyc
 *.pth
 *.log
@@ -6,3 +6,4 @@
 rwkv_vocab_v20230424.txt
 data/*
 onnx/*
+.venv
