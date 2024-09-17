@@ -89,7 +89,6 @@ async def chat(
     nickname: str = "墨子",
     addhead: str = "",
     state: str = MODEL_STATE_NAME,
-    debug=False,
     echo=None,
 ) -> Tuple[str, bool]:
     id = clean_symbols(id)
@@ -104,7 +103,7 @@ async def chat(
     prxxx(f" #    $33<Chat>   $34<id>: {id} | $34<user>: {user} | $34<echo>: {echo}")
     prxxx(f" #    -M->[$35<{message}>]-{echo}")
     answer, original, want_to_say = await chaters[id].chat(
-        message=message, chatuser=user, nickname=nickname, addhead=addhead, debug=debug
+        message=message, chatuser=user, nickname=nickname, addhead=addhead
     )
 
     prxxx()
@@ -290,7 +289,6 @@ async def W_chat():
             addhead*
             default_state*
             echo*
-            debug*
         }
         """
         try:

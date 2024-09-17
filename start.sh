@@ -1,3 +1,3 @@
 #!/bin/bash 
-source $PWD/venv/bin/activate
+source $PWD/.venv/bin/activate
 python $PWD/app.py

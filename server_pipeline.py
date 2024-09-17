@@ -395,6 +395,7 @@ class RWKVEmbryo:
         )
         self.default_state: str = state_name
         self.debug = False
+        self.debug_log = None
 
         self.state: RWKVState = RWKVState()
         self.state_lock: asyncio.Lock = asyncio.Lock()
@@ -508,6 +509,17 @@ class RWKVEmbryo:
 
     @log_call
     async def check_state(self):
+        if not self.debug:
+            return
+        logs = []
+        logs.append(f"c_l:{len(self.state.processed_tokens)}")
+        logs.append(f"s_mx:{self.state.state.max().item()},{self.state.state.min().item()}")        
+
+        logs.append("\n")
+        logs = " ".join(logs)
+        print(logs)
+        self.debug_log.write(logs)
+        self.debug_log.flush()
         return
         tt = list(np.where(sampling.sample_probs(self.state.logits.copy()) > 0)[0])
         if tt[0] == 0:
@@ -678,6 +690,35 @@ class RWKVEmbryo:
     @log_call
     async def get_history(self):
         return tokenizer_decode(self.state.processed_tokens)
+    
+    @log_call
+    async def pre_process_input(self, message) -> str:
+        if "-temp=" in message:
+            temperature = float(message.split("-temp=")[1].split(" ")[0])
+            message = message.replace(f"-temp={temperature:g}", "")
+            self.temperature = max(0.2, min(temperature, 5.0))
+
+        if "-top_p=" in message:
+            top_p = float(message.split("-top_p=")[1].split(" ")[0])
+            message = message.replace(f"-top_p={top_p:g}", "")
+            self.top_p = max(0.0, min(top_p, 1.0))
+
+        if "-debug=" in message:
+            debug = message.split("-debug=")[1].split(" ")[0]
+            message = message.replace(f"-debug={debug}", "")
+            self.debug = {"false":False, "true": True, "0": False, "1":True}[debug.lower()]
+            if self.debug:
+                self.debug_log = self.debug_log or open(f"data/{self.id}/debug.log", "w")
+            elif self.debug is not None:
+                self.debug_log.close()
+                self.debug_log = None
+            prxxx(f"$31<Change debug>   $34<id>: {self.id} | $34<state>: {self.debug}")
+
+        if "+reset" in message:
+            await self.reset_state()
+            return None # " : Done", " : Done", True
+        
+        return message
 
 
 # ======================================== Chater Embryo ==========================================
@@ -756,22 +797,9 @@ class RWKVChater(RWKVChaterEmbryo):
         chatuser: str = None,
         nickname: str = None,
         addhead: str = "",
-        debug: bool = False,
     ) -> Tuple[str, str, float]:
-        self.debug = debug
-
-        if "-temp=" in message:
-            temperature = float(message.split("-temp=")[1].split(" ")[0])
-            message = message.replace("-temp=" + f"{temperature:g}", "")
-            self.temperature = max(0.2, min(temperature, 5.0))
-
-        if "-top_p=" in message:
-            top_p = float(message.split("-top_p=")[1].split(" ")[0])
-            message = message.replace("-top_p=" + f"{top_p:g}", "")
-            self.top_p = max(0.0, min(top_p, 1.0))
-
-        if "+reset" in message:
-            await self.reset_state()
+        message = await self.pre_process_input(message)
+        if message is None:
             return " : Done", " : Done", True
 
         nickname = self.prompt.bot if nickname is None or nickname == "" else nickname
@@ -852,23 +880,10 @@ class RWKVGroupChater(RWKVChaterEmbryo):
             if (chatuser is None) or (chatuser == "") or (chatuser == self.prompt.bot)
             else chatuser
         )
-        if "-temp=" in message:
-            temperature = float(message.split("-temp=")[1].split(" ")[0])
-            message = message.replace("-temp=" + f"{temperature:g}", "")
-            self.temperature = max(0.2, min(temperature, 5.0))
 
-        if "-top_p=" in message:
-            top_p = float(message.split("-top_p=")[1].split(" ")[0])
-            message = message.replace("-top_p=" + f"{top_p:g}", "")
-            self.top_p = max(0.0, min(top_p, 1.0))
-
-        if "+reset" in message:
-            await self.reset_state()
-            return
-
-        if "+" == message[0]:
-            self.message_cache.clear()
-            return
+        message = await self.pre_process_input(message)
+        if message is None:
+            return " : Done", " : Done", True
 
         assert self.prompt.multiuser, "Group Chat need multiuser prompt!"
 
@@ -876,6 +891,10 @@ class RWKVGroupChater(RWKVChaterEmbryo):
         if len(self.message_cache) > 256:
             self.message_cache = self.message_cache[:200]
 
+        if "+" == message[0]:
+            self.message_cache.clear()
+            return
+            
     @log_call
     async def get_answer(
         self,
