@@ -51,6 +51,7 @@ from config import (
     MODEL_NAME,
     MODEL_STATE_NAME,
     TONKEIZER_DICT,
+    MODEL_DEBUG,
     CHAT_LANGUAGE,
     CHAT_PROMPT_TYPE,
 )
@@ -70,7 +71,9 @@ model = RWKV_RNN(
         "vocab_size": 65536,
         "device": RWKV_DEVICE,
         "onnx_opset": "18",
+        #"dataformat": "bf16",
         "dataformat": "bf16",
+
     }
 ).to(RWKV_DEVICE)
 
@@ -394,8 +397,8 @@ class RWKVEmbryo:
             RWKVPrompt(prompt) if isinstance(prompt, str) else prompt
         )
         self.default_state: str = state_name
-        self.debug = False
-        self.debug_log = None
+        self.debug = MODEL_DEBUG
+        self.debug_log = open(f"data/{id}/debug.log", "a+") if MODEL_DEBUG else None
 
         self.state: RWKVState = RWKVState()
         self.state_lock: asyncio.Lock = asyncio.Lock()
@@ -708,11 +711,11 @@ class RWKVEmbryo:
             message = message.replace(f"-debug={debug}", "")
             self.debug = {"false":False, "true": True, "0": False, "1":True}[debug.lower()]
             if self.debug:
-                self.debug_log = self.debug_log or open(f"data/{self.id}/debug.log", "w")
+                self.debug_log = self.debug_log or open(f"data/{self.id}/debug.log", "a+")
             elif self.debug is not None:
                 self.debug_log.close()
                 self.debug_log = None
-            prxxx(f"$31<Change debug>   $34<id>: {self.id} | $34<state>: {self.debug}")
+            prxxx(f"$31<Change debug\a>   $34<id>: {self.id} | $34<state>: {self.debug}")
 
         if "+reset" in message:
             await self.reset_state()

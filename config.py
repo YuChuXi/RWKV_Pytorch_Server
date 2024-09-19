@@ -24,7 +24,7 @@ PENALTY_MITIGATE: float = 1 / 0.996
 # These tokens will not be punished FREQUENCY_PENALTY
 EXCEPTIONAL_TOKENS: Dict[int, float] = {261: 0.2,}
 # How engaged a model is with prompt, which could be used to mitigate Alzheimer's disease in small models
-OBSTINATE_ALPHA: float = 0.0 # 0.06
+OBSTINATE_ALPHA: float = 0.06
 # The larger the value, the smaller the impact on the semantic layer.
 # Reference formula: a / (b * (x - 0.5)**2 + 1), x in [0, 1]
 # -100:u, 0:-, 100:^
@@ -49,17 +49,18 @@ MODEL_NAME = "weight/RWKV-x060-World-3B-v2.1-Claude-nsfw"
 MODEL_NAME = "weight/RWKV-x060-World-7B-v2.1-20240507-ctx4096"
 #MODEL_NAME = "weight/rwkv-x060-14b-world-v2.1-93%trained-20240602-ctx4k.pth"
 MODEL_NAME = "weight/RWKV-x060-World-7B-v2.1-20240507-ctx4096-PISSA-3.pth"
+#MODEL_NAME = "weight/RWKV-x060-World-3B-v2.1-20240417-ctx4096.pth"
 
 MODEL_STATE_NAME: str = "default.state"
 
 TONKEIZER_DICT: str = "asset/rwkv_vocab_v20230424.txt"
 
+MODEL_DEBUG:bool = False
 
 # ========================================= App settings ==========================================
 
 APP_BIND: List[str] = ["0.0.0.0:48088", "[::]:48089"]
 APP_AUTOSAVE_TIME: int = 600
-
 APP_TEST_MESSAGE: str = """告诉我关于你的一切。"""
 
 
