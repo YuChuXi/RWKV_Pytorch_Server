@@ -24,7 +24,7 @@ PENALTY_MITIGATE: float = 1 / 0.996
 # These tokens will not be punished FREQUENCY_PENALTY
 EXCEPTIONAL_TOKENS: Dict[int, float] = {261: 0.2,}
 # How engaged a model is with prompt, which could be used to mitigate Alzheimer's disease in small models
-OBSTINATE_ALPHA: float = 0.06
+OBSTINATE_ALPHA: float = 0.00
 # The larger the value, the smaller the impact on the semantic layer.
 # Reference formula: a / (b * (x - 0.5 - g)**2 + 1), x in [0, 1]
 # -100:u, 0:-, 100:^
@@ -53,7 +53,7 @@ MODEL_NAME = "weight/RWKV-x060-World-7B-v2.1-20240507-ctx4096"
 MODEL_NAME = "weight/RWKV-x060-World-7B-v2.1-20240507-ctx4096-PISSA-3.pth"
 #MODEL_NAME = "weight/RWKV-x060-World-3B-v2.1-20240417-ctx4096.pth
 #MODEL_NAME = "weight/RWKV-x060-World-3B-v2.1-20240417-ctx4096_nv-PISSA-19.pth"
-MODEL_NAME: str = "weight/rwkv-x060-7b-world-v3-50%25trained-20241001-ctx4k.pth"
+MODEL_NAME: str = "weight/RWKV-x060-World-7B-v2.1-20240507-ctx4096"
 
 MODEL_STATE_NAME: str = "default.state"
 

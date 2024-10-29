@@ -39,6 +39,7 @@ from config import (
     EXCEPTIONAL_TOKENS,
     OBSTINATE_ALPHA,
     OBSTINATE_BATA,
+    OBSTINATE_GAMMA,
     NAGGING,
     PENALTY_MITIGATE,
     MAX_GENERATION_LENGTH,
@@ -71,9 +72,8 @@ model = RWKV_RNN(
         "vocab_size": 65536,
         "device": RWKV_DEVICE,
         "onnx_opset": "18",
-        #"dataformat": "bf16",
+        # "dataformat": "bf16",
         "dataformat": "bf16",
-
     }
 ).to(RWKV_DEVICE)
 
@@ -100,6 +100,7 @@ def tokenizer_decode(l: List[int]) -> str:
 
 
 # ========================================= Embryo states =========================================
+
 
 class RWKVState:
     @log_call
@@ -171,9 +172,9 @@ class RWKVState:
                 self.state = load_state
             else:
                 # 32, 64, 64, 64 -> (32*(64+2)), (64*64)
-                n_layer= len(load_state)
+                n_layer = len(load_state)
                 n_head, head_size, _ = load_state.popitem()[1].shape
-                state = torch.zeros((1, n_layer * (head_size+2), n_head * head_size))
+                state = torch.zeros((1, n_layer * (head_size + 2), n_head * head_size))
                 for i, (key, value) in enumerate(load_state.items()):
                     state[
                         :, ((2 + head_size) * i + 2) : ((2 + head_size) * (i + 1)), :
@@ -181,8 +182,12 @@ class RWKVState:
                 self.state = state
             if not have_history:
                 self.logits = torch.zeros(model.emb.weight.shape[0])
-            self.state = self.state.to(device=model.emb.weight.device, dtype=model.emb.weight.dtype)
-            self.logits = self.logits.to(device=model.emb.weight.device, dtype=model.emb.weight.dtype)
+            self.state = self.state.to(
+                device=model.emb.weight.device, dtype=model.emb.weight.dtype
+            )
+            self.logits = self.logits.to(
+                device=model.emb.weight.device, dtype=model.emb.weight.dtype
+            )
 
         return self
 
@@ -216,39 +221,48 @@ class RWKVState:
         self.logits = self.logits * (1 - weight) + state.logits * weight
 
         return self
-    
+
     @log_call
     async def mix_n(self, state, weight: float):
         staot0 = await self.copy()
         if weight == 0:
             return staot0
-        
+
         h = state.state.shape[-2]
-        w = torch.arange(0, h, device=staot0.state.device, dtype=staot0.state.dtype) // (model.head_size + 2)
+        w = torch.arange(
+            0, h, device=staot0.state.device, dtype=staot0.state.dtype
+        ) // (model.head_size + 2)
         w = w / w.max()
-        w = weight / (OBSTINATE_BATA * (w - 0.5)**2 + 1)
+        w = weight / (OBSTINATE_BATA * (w - (OBSTINATE_GAMMA + 0.5)) ** 2 + 1)
         w = w.reshape(1, -1, 1)
         staot0.state = staot0.state * (1 - w) + state.state * w
-
         staot0.logits = staot0.logits * (1 - weight) + state.logits * weight
+
+        # staot0.state = staot0.state + state.state * w
+        # staot0.logits = staot0.logits + state.logits * weight
+
         return staot0
-    
+
     @log_call
     @run_in_async_thread
     def mix_n_inplace(self, state, weight: float):
         if weight == 0:
             return self
-        
+
         h = state.state.shape[-2]
-        w = torch.arange(0, h, device=self.state.device, dtype=self.state.dtype) // (model.head_size + 2)
+        w = torch.arange(0, h, device=self.state.device, dtype=self.state.dtype) // (
+            model.head_size + 2
+        )
         w = w / w.max()
-        w = weight / (OBSTINATE_BATA * (w - 0.5)**2 + 1)
+        w = weight / (OBSTINATE_BATA * (w - (OBSTINATE_GAMMA + 0.5)) ** 2 + 1)
         w = w.reshape(1, -1, 1)
         self.state = self.state * (1 - w) + state.state * w
-
         self.logits = self.logits * (1 - weight) + state.logits * weight
+
+        # self.state = self.state + state.state * w
+        # self.logits = self.logits + state.logits * weight
         return self
-    
+
     @log_call
     async def mix_max(self, state, weight: float):
         staot0 = await self.copy()
@@ -283,6 +297,18 @@ class RWKVState:
             self.logits, state.logits / state.logits.mean() * weight
         )
         self.logits = self.logits / self.logits.mean() * mean
+        return self
+
+    @log_call
+    async def mix_ln12800(self, state, weight):
+        staot0 = await self.copy()
+        staot0 = staot0.state * (12800 / staot0.state.abs().max())
+        return staot0
+
+    @log_call
+    @run_in_async_thread
+    def mix_ln12800_inplace(self, state, weight):
+        self.state *= 12800 / self.state.abs().max()
         return self
 
     @log_call
@@ -338,7 +364,8 @@ class RWKVPrompt:
                     with open(self.prompt, "r", encoding="utf-8", errors="ignore") as f:
                         self.prompt = f.read()
 
-            assert self.prompt != "" or self.state is not None, "Prompt must not be empty"
+            if self.prompt == "" or self.state is None:
+                prxxx("$31<W: Prompt is empty>")
 
     @log_call
     def __str__(self):
@@ -346,7 +373,7 @@ class RWKVPrompt:
             return self.get_preview(self.prompt)
         if self.state is not None:
             return f"state:{self.state}"
-        return "None" 
+        return "None"
 
     @log_call
     def get_preview(self, string):
@@ -366,7 +393,8 @@ class RWKVPrompt:
         tail = self.split if tail is None else tail
         if self.format is None:
             return f"{name}{self.separator} {message}{tail}"
-        return self.format % (name, message) + tail
+
+        return self.format.format(name=name, message=message) + tail
 
 
 DEFAULT_PROMPT = RWKVPrompt()
@@ -414,7 +442,9 @@ class RWKVEmbryo:
         self.have_interrupt: bool = False
 
         self.mlog = open(f"data/{self.id}/model.log", "ab+")
-        prxxx(f"$32<Init RWKV>   $34<id>: {id} | $34<state>: {state_name} | $34<prompt>: {prompt}")
+        prxxx(
+            f"$32<Init RWKV>   $34<id>: {id} | $34<state>: {state_name} | $34<prompt>: {prompt}"
+        )
 
     @log_call
     def __del__(self):
@@ -436,7 +466,8 @@ class RWKVEmbryo:
             ltime = time.time()
             await self.process_tokens(prompt_tokens)
             prxxx(
-                f"$32<Processed prompt tokens>   $34<used>: {int(time.time()-ltime)} s", q=q
+                f"$32<Processed prompt tokens>   $34<used>: {int(time.time()-ltime)} s",
+                q=q,
             )
             await self.save_state(self.id, must=True, q=q)
             await self.save_state(self.default_state, must=True, q=q)
@@ -444,7 +475,6 @@ class RWKVEmbryo:
                 f' : Load prompt ["{prompt.prompt}"]\n\n'.encode(encoding="utf-8")
             )
             return
-
 
         if prompt is not None and prompt.state is not None:
             await self.state.load(prompt.state)
@@ -514,9 +544,15 @@ class RWKVEmbryo:
     async def check_state(self):
         if not self.debug:
             return
+        print(self.state.logits)
         logs = []
         logs.append(f"c_l:{len(self.state.processed_tokens)}")
-        logs.append(f"s_mx:{self.state.state.max().item()},{self.state.state.min().item()}")        
+        logs.append(
+            f"s_mx:{self.state.state.max().item()},{self.state.state.min().item()}"
+        )
+        logs.append(
+            f"s_mv:{self.state.state.abs().mean().item()},{self.state.state.var().item()}"
+        )
 
         logs.append("\n")
         logs = " ".join(logs)
@@ -693,7 +729,7 @@ class RWKVEmbryo:
     @log_call
     async def get_history(self):
         return tokenizer_decode(self.state.processed_tokens)
-    
+
     @log_call
     async def pre_process_input(self, message) -> str:
         if "-temp=" in message:
@@ -709,18 +745,24 @@ class RWKVEmbryo:
         if "-debug=" in message:
             debug = message.split("-debug=")[1].split(" ")[0]
             message = message.replace(f"-debug={debug}", "")
-            self.debug = {"false":False, "true": True, "0": False, "1":True}[debug.lower()]
+            self.debug = {"false": False, "true": True, "0": False, "1": True}[
+                debug.lower()
+            ]
             if self.debug:
-                self.debug_log = self.debug_log or open(f"data/{self.id}/debug.log", "a+")
+                self.debug_log = self.debug_log or open(
+                    f"data/{self.id}/debug.log", "a+"
+                )
             elif self.debug is not None:
                 self.debug_log.close()
                 self.debug_log = None
-            prxxx(f"$31<Change debug\a>   $34<id>: {self.id} | $34<state>: {self.debug}")
+            prxxx(
+                f"$31<Change debug\a>   $34<id>: {self.id} | $34<state>: {self.debug}"
+            )
 
         if "+reset" in message:
             await self.reset_state()
-            return None # " : Done", " : Done", True
-        
+            return None  # " : Done", " : Done", True
+
         return message
 
 
@@ -780,7 +822,6 @@ class RWKVChaterEmbryo(RWKVEmbryo):
             self.state.logits.clone(), self.temperature, self.top_p
         ).cpu()
         return probs[head[0]].item() * NAGGING
-    
 
 
 # ============================================ Chater =============================================
@@ -825,7 +866,9 @@ class RWKVChater(RWKVChaterEmbryo):
                 else message
             )
 
-        head = tokenizer_encode(self.prompt.process_format(self.prompt.bot, tail="") + addhead)
+        head = tokenizer_encode(
+            self.prompt.process_format(self.prompt.bot, tail="") + addhead
+        )
         if message != "" and message[0] != "+":
             prompt = self.prompt.process_format(user, f"{message}")
             await self.process_tokens(tokenizer_encode(prompt))
@@ -897,12 +940,10 @@ class RWKVGroupChater(RWKVChaterEmbryo):
         if "+" == message[0]:
             self.message_cache.clear()
             return
-            
+
     @log_call
     async def get_answer(
-        self,
-        nickname: str = None,
-        addhead:str = ""
+        self, nickname: str = None, addhead: str = ""
     ) -> Tuple[str, str, float]:
         self.plog.write(f"{nickname}: ")
 
@@ -914,7 +955,9 @@ class RWKVGroupChater(RWKVChaterEmbryo):
             self.clean_interrupt()
             raise RWKVInterruptException
 
-        head = tokenizer_encode(self.prompt.process_format(self.prompt.bot, tail="") + addhead)
+        head = tokenizer_encode(
+            self.prompt.process_format(self.prompt.bot, tail="") + addhead
+        )
 
         answer, original = await self.gen_future(head=head, end_of=self.prompt.split)
         await self.state.mix_n_inplace(state_cache[self.default_state], OBSTINATE_ALPHA)
@@ -937,7 +980,7 @@ async def process_default_state():
     else:
         await RWKVChater(
             id="chat-model", state_name=MODEL_STATE_NAME, prompt=DEFAULT_PROMPT
-        ).init_state(prompt = DEFAULT_PROMPT)
+        ).init_state(prompt=DEFAULT_PROMPT)
 
 
 """

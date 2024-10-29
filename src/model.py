@@ -553,9 +553,8 @@ class RWKV_RNN(nn.Module):
         """
         token_out = None
         data_len = token.shape[1]
-        for i in trange((data_len-2)//slice_len+1, desc=f"Forward chunks: *{slice_len}", leave=False):
-            start = i*slice_len
-            end = min((i+1)*slice_len, data_len)
+        for start in tqdm(range(0, data_len, slice_len), desc=f"Forward chunks: *{slice_len}", leave=False):
+            end = min(start + slice_len, data_len)
             token_i = token[:, start:end]
             token_out, state_new = self.forward_parallel(token_i, state)
             state = state_new.detach()  # 使用 detach() 截断梯度传播, 训练使用
@@ -574,10 +573,9 @@ class RWKV_RNN(nn.Module):
         """
         token_out = None
         data_len = token.shape[1]
-        for i in trange((data_len-2)//slice_len+1, desc=f"Forward chunks: *{slice_len}", leave=False):
+        for start in tqdm(range(0, data_len, slice_len), desc=f"Forward chunks: *{slice_len}", leave=False):
             await asyncio.sleep(0.01)
-            start = i*slice_len
-            end = min((i+1)*slice_len, data_len)
+            end = min(start + slice_len, data_len)
             token_i = token[:, start:end]
             token_out, state_new = self.forward_parallel(token_i, state)
             state = state_new.detach()  # 使用 detach() 截断梯度传播, 训练使用
