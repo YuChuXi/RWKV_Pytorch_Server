@@ -25,7 +25,7 @@ PENALTY_MITIGATE: float = 1 / 0.996
 EXCEPTIONAL_TOKENS: Dict[int, float] = {261: 0.2,}
 
 # How engaged a model is with prompt, which could be used to mitigate Alzheimer's disease in small models
-OBSTINATE_ALPHA: float = 0.00
+OBSTINATE_ALPHA: float = 0.1
 # The larger the value, the smaller the impact on the semantic layer.
 # Reference formula: a / (b * (x - 0.5 - g)**2 + 1), x in [0, 1]
 # -100:u, 0:-, 100:^
@@ -50,7 +50,7 @@ MODEL_NAME = "weight/RWKV-6-v2-ctx4096.roleplay"
 MODEL_NAME = "weight/RWKV-x060-World-1B6-v2.1-20240328-ctx4096"
 MODEL_NAME = "weight/RWKV-x060-World-3B-v2.1-Claude-nsfw"
 #MODEL_NAME = "weight/RWKV-x060-World-3B-v2.1-xuexue-v4"
-MODEL_NAME = "weight/RWKV-x060-World-7B-v3-20241112-ctx4096.pth"
+MODEL_NAME = "weight/RWKV-x060-World-7B-v3-20241112-ctx4096_nv.pth"
 #MODEL_NAME = "weight/rwkv-x060-14b-world-v2.1-93%trained-20240602-ctx4k.pth"
 #MODEL_NAME = "weight/RWKV-x060-World-7B-v2.1-20240507-ctx4096-PISSA-3.pth"
 #MODEL_NAME = "weight/RWKV-x060-World-3B-v2.1-20240417-ctx4096.pth

@@ -253,9 +253,15 @@ class RWKVState:
         w = torch.arange(0, h, device=self.state.device, dtype=self.state.dtype) // (
             model.head_size + 2
         )
+        print("\nw1", w)
+        print("\nshape", state.state.shape)
         w = w / w.max()
+        print("\nw2", w)
         w = weight / (OBSTINATE_BATA * (w - (OBSTINATE_GAMMA + 0.5)) ** 2 + 1)
+        print("\nw3", w)
         w = w.reshape(1, -1, 1)
+        print("\nw4", w.max())
+        torch.save(w.cpu(), "data/w.pth")
         self.state = self.state * (1 - w) + state.state * w
         self.logits = self.logits * (1 - weight) + state.logits * weight
 
@@ -417,7 +423,9 @@ class RWKVEmbryo:
     ):
         check_dir(f"data/{id}")
         assert len(id) > 0, "ID must not be empty"
-        assert (state_name is not None) and len(state_name) > 0, "State must not be empty"
+        assert (state_name is not None) and len(
+            state_name
+        ) > 0, "State must not be empty"
         assert id != state_name, "ID != State !!!"
 
         self.id: str = str(id)
