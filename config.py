@@ -10,7 +10,7 @@ RWKV_DEVICE = "cuda"
 # ======================================== Script settings ========================================
 
 # Sampling temperature. It could be a good idea to increase temperature when top_p is low.
-TEMPERATURE: float = 1.0
+TEMPERATURE: float = 1.3
 # For better Q&A accuracy and less diversity, reduce top_p (to 0.5, 0.2, 0.1 etc.)
 TOP_P: float = 0.3
 # Penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.
@@ -23,16 +23,18 @@ PRPEAT_PENALTY: float = 1.00
 PENALTY_MITIGATE: float = 1 / 0.996
 # These tokens will not be punished FREQUENCY_PENALTY
 EXCEPTIONAL_TOKENS: Dict[int, float] = {261: 0.2,}
+
 # How engaged a model is with prompt, which could be used to mitigate Alzheimer's disease in small models
-OBSTINATE_ALPHA: float = 0.06
+OBSTINATE_ALPHA: float = 0.00
 # The larger the value, the smaller the impact on the semantic layer.
 # Reference formula: a / (b * (x - 0.5 - g)**2 + 1), x in [0, 1]
 # -100:u, 0:-, 100:^
 OBSTINATE_BATA: float = 16
 # -10:^--, 0:-^-, 10: --^
 OBSTINATE_GAMMA: float = 0
+
 # The higher, the more say. 0 ~ 1
-NAGGING:float = 0.80
+NAGGING:float = 0.5
 MAX_GENERATION_LENGTH: int = 128
 END_OF_TEXT_TOKEN: int = 0
 NEW_LINE_OF_TEXT_TOKEN: int = 261
@@ -48,12 +50,12 @@ MODEL_NAME = "weight/RWKV-6-v2-ctx4096.roleplay"
 MODEL_NAME = "weight/RWKV-x060-World-1B6-v2.1-20240328-ctx4096"
 MODEL_NAME = "weight/RWKV-x060-World-3B-v2.1-Claude-nsfw"
 #MODEL_NAME = "weight/RWKV-x060-World-3B-v2.1-xuexue-v4"
-MODEL_NAME = "weight/RWKV-x060-World-7B-v2.1-20240507-ctx4096"
+MODEL_NAME = "weight/RWKV-x060-World-7B-v3-20241112-ctx4096.pth"
 #MODEL_NAME = "weight/rwkv-x060-14b-world-v2.1-93%trained-20240602-ctx4k.pth"
-MODEL_NAME = "weight/RWKV-x060-World-7B-v2.1-20240507-ctx4096-PISSA-3.pth"
+#MODEL_NAME = "weight/RWKV-x060-World-7B-v2.1-20240507-ctx4096-PISSA-3.pth"
 #MODEL_NAME = "weight/RWKV-x060-World-3B-v2.1-20240417-ctx4096.pth
 #MODEL_NAME = "weight/RWKV-x060-World-3B-v2.1-20240417-ctx4096_nv-PISSA-19.pth"
-MODEL_NAME: str = "weight/rwkv-x060-7b-world-v3-50%25trained-20241001-ctx4k.pth"
+#MODEL_NAME: str = "weight/rwkv-x060-7b-world-v3-50%25trained-20241001-ctx4k.pth"
 
 MODEL_STATE_NAME: str = "default.state"
 
@@ -81,7 +83,7 @@ CHAT_PROMPT_TYPE: str = "State-QUN"
 CHAT_PROMPT_TYPE = "Chat-XiaoPu"
 CHAT_PROMPT_TYPE = "Chat-MuXue"
 CHAT_PROMPT_TYPE = "Chat-Qun"
-CHAT_PROMPT_TYPE = "Chat"
+#CHAT_PROMPT_TYPE = "Chat"
 #CHAT_PROMPT_TYPE = "FaDian"
 
 

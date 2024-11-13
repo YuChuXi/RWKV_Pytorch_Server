@@ -4,5 +4,5 @@
     "prompt": "prompt/mozi_v7qn.init",
     "multiuser": true,
     "split": "\n\n",
-    "format": "%s: %s"
+    "format": "{name}: {message}"
 }

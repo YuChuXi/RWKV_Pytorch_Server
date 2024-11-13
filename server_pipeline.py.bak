@@ -344,7 +344,7 @@ class RWKVPrompt:
             self.state = None
         else:
             prompt_config = f"prompt/{language}-{type}.json"
-            if file is not None:
+            if not file is None:
                 prompt_config = file
             prxxx(f"$32<Loading RWKV prompt>   $34<config>: {prompt_config}")
             with open(
@@ -364,7 +364,7 @@ class RWKVPrompt:
                     with open(self.prompt, "r", encoding="utf-8", errors="ignore") as f:
                         self.prompt = f.read()
 
-            if self.prompt == "" or (self.state is None):
+            if self.prompt == "" or self.state is None:
                 prxxx("$31<W: Prompt is empty>")
 
     @log_call
@@ -417,7 +417,7 @@ class RWKVEmbryo:
     ):
         check_dir(f"data/{id}")
         assert len(id) > 0, "ID must not be empty"
-        assert (state_name is not None) and len(state_name) > 0, "State must not be empty"
+        assert not state_name is None and len(state_name) > 0, "State must not be empty"
         assert id != state_name, "ID != State !!!"
 
         self.id: str = str(id)

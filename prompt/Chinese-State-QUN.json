@@ -4,6 +4,6 @@
     "state": "qun.state",
     "multiuser": true,
     "split": "\n\n",
-    "format": "%s: %s",
+    "format": "{name}: {message}",
     "ignore": "\\[.+?\\]"
 }
